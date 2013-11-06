@@ -7,7 +7,7 @@
 Ignores top bit of h.
 */
 
-void fe_frombytes(fe h,const unsigned char *s)
+static inline void fe_frombytes(fe h,const unsigned char *s)
 {
   crypto_int64 h0 = load_4(s);
   crypto_int64 h1 = load_3(s + 4) << 6;

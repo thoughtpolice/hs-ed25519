@@ -33,7 +33,7 @@ Can get away with 11 carries, but then data flow is much deeper.
 With tighter constraints on inputs can squeeze carries into int32.
 */
 
-void fe_mul(fe h,const fe f,const fe g)
+static inline void fe_mul(fe h,const fe f,const fe g)
 {
   crypto_int32 f0 = f[0];
   crypto_int32 f1 = f[1];

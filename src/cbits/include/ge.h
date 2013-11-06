@@ -71,25 +71,25 @@ typedef struct {
 #define ge_scalarmult_base crypto_sign_ed25519_ref10_ge_scalarmult_base
 #define ge_double_scalarmult_vartime crypto_sign_ed25519_ref10_ge_double_scalarmult_vartime
 
-extern void ge_tobytes(unsigned char *,const ge_p2 *);
-extern void ge_p3_tobytes(unsigned char *,const ge_p3 *);
-extern int ge_frombytes_negate_vartime(ge_p3 *,const unsigned char *);
+static inline void ge_tobytes(unsigned char *,const ge_p2 *);
+static inline void ge_p3_tobytes(unsigned char *,const ge_p3 *);
+static inline int  ge_frombytes_negate_vartime(ge_p3 *,const unsigned char *);
 
-extern void ge_p2_0(ge_p2 *);
-extern void ge_p3_0(ge_p3 *);
-extern void ge_precomp_0(ge_precomp *);
-extern void ge_p3_to_p2(ge_p2 *,const ge_p3 *);
-extern void ge_p3_to_cached(ge_cached *,const ge_p3 *);
-extern void ge_p1p1_to_p2(ge_p2 *,const ge_p1p1 *);
-extern void ge_p1p1_to_p3(ge_p3 *,const ge_p1p1 *);
-extern void ge_p2_dbl(ge_p1p1 *,const ge_p2 *);
-extern void ge_p3_dbl(ge_p1p1 *,const ge_p3 *);
+static inline void ge_p2_0(ge_p2 *);
+static inline void ge_p3_0(ge_p3 *);
+static inline void ge_precomp_0(ge_precomp *);
+static inline void ge_p3_to_p2(ge_p2 *,const ge_p3 *);
+static inline void ge_p3_to_cached(ge_cached *,const ge_p3 *);
+static inline void ge_p1p1_to_p2(ge_p2 *,const ge_p1p1 *);
+static inline void ge_p1p1_to_p3(ge_p3 *,const ge_p1p1 *);
+static inline void ge_p2_dbl(ge_p1p1 *,const ge_p2 *);
+static inline void ge_p3_dbl(ge_p1p1 *,const ge_p3 *);
 
-extern void ge_madd(ge_p1p1 *,const ge_p3 *,const ge_precomp *);
-extern void ge_msub(ge_p1p1 *,const ge_p3 *,const ge_precomp *);
-extern void ge_add(ge_p1p1 *,const ge_p3 *,const ge_cached *);
-extern void ge_sub(ge_p1p1 *,const ge_p3 *,const ge_cached *);
-extern void ge_scalarmult_base(ge_p3 *,const unsigned char *);
-extern void ge_double_scalarmult_vartime(ge_p2 *,const unsigned char *,const ge_p3 *,const unsigned char *);
+static inline void ge_madd(ge_p1p1 *,const ge_p3 *,const ge_precomp *);
+static inline void ge_msub(ge_p1p1 *,const ge_p3 *,const ge_precomp *);
+static inline void ge_add(ge_p1p1 *,const ge_p3 *,const ge_cached *);
+static inline void ge_sub(ge_p1p1 *,const ge_p3 *,const ge_cached *);
+static inline void ge_scalarmult_base(ge_p3 *,const unsigned char *);
+static inline void ge_double_scalarmult_vartime(ge_p2 *,const unsigned char *,const ge_p3 *,const unsigned char *);
 
 #endif

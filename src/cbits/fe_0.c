@@ -4,7 +4,7 @@
 h = 0
 */
 
-void fe_0(fe h)
+static inline void fe_0(fe h)
 {
   h[0] = 0;
   h[1] = 0;

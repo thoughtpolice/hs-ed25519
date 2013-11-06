@@ -12,7 +12,7 @@ Postconditions:
    |h| bounded by 1.1*2^26,1.1*2^25,1.1*2^26,1.1*2^25,etc.
 */
 
-void fe_sub(fe h,const fe f,const fe g)
+static inline void fe_sub(fe h,const fe f,const fe g)
 {
   crypto_int32 f0 = f[0];
   crypto_int32 f1 = f[1];

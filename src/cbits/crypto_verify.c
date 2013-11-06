@@ -2,6 +2,7 @@
 
 #define VERIFY_F(i) differentbits |= x[i] ^ y[i];
 
+static inline
 int crypto_verify_16(const unsigned char *x,const unsigned char *y)
 {
   unsigned int differentbits = 0;
@@ -24,6 +25,7 @@ int crypto_verify_16(const unsigned char *x,const unsigned char *y)
   return (1 & ((differentbits - 1) >> 8)) - 1;
 }
 
+static inline
 int crypto_verify_32(const unsigned char *x,const unsigned char *y)
 {
   unsigned int differentbits = 0;

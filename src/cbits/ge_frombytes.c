@@ -8,7 +8,7 @@ static const fe sqrtm1 = {
 #include "sqrtm1.h"
 } ;
 
-int ge_frombytes_negate_vartime(ge_p3 *h,const unsigned char *s)
+static inline int ge_frombytes_negate_vartime(ge_p3 *h,const unsigned char *s)
 {
   fe u;
   fe v;

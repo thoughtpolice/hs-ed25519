@@ -1,7 +1,7 @@
 #include "sha512.h"
 #include "crypto_uint64.h"
 
-static crypto_uint64 load_bigendian(const unsigned char *x)
+static inline crypto_uint64 load_bigendian(const unsigned char *x)
 {
   return
       (crypto_uint64) (x[7]) \
@@ -15,7 +15,7 @@ static crypto_uint64 load_bigendian(const unsigned char *x)
   ;
 }
 
-static void store_bigendian(unsigned char *x,crypto_uint64 u)
+static inline void store_bigendian(unsigned char *x,crypto_uint64 u)
 {
   x[7] = u; u >>= 8;
   x[6] = u; u >>= 8;
@@ -69,7 +69,7 @@ static void store_bigendian(unsigned char *x,crypto_uint64 u)
   b = a; \
   a = T1 + T2;
 
-int crypto_hashblocks_sha512(unsigned char *statebytes,const unsigned char *in,unsigned long long inlen)
+static inline int crypto_hashblocks_sha512(unsigned char *statebytes,const unsigned char *in,unsigned long long inlen)
 {
   crypto_uint64 state[8];
   crypto_uint64 a;
@@ -250,7 +250,7 @@ static const unsigned char iv[64] = {
   0x5b,0xe0,0xcd,0x19,0x13,0x7e,0x21,0x79
 } ;
 
-int crypto_hash_sha512(unsigned char *out,const unsigned char *in,unsigned long long inlen)
+static inline int crypto_hash_sha512(unsigned char *out,const unsigned char *in,unsigned long long inlen)
 {
   unsigned char h[64];
   unsigned char padded[256];

@@ -1,7 +1,7 @@
 #include "ge.h"
 #include "crypto_uint32.h"
 
-static unsigned char equal(signed char b,signed char c)
+static inline unsigned char equal(signed char b,signed char c)
 {
   unsigned char ub = b;
   unsigned char uc = c;
@@ -12,14 +12,14 @@ static unsigned char equal(signed char b,signed char c)
   return y;
 }
 
-static unsigned char negative(signed char b)
+static inline unsigned char negative(signed char b)
 {
   unsigned long long x = b; /* 18446744073709551361..18446744073709551615: yes; 0..255: no */
   x >>= 63; /* 1: yes; 0: no */
   return x;
 }
 
-static void cmov(ge_precomp *t,ge_precomp *u,unsigned char b)
+static inline void cmov(ge_precomp *t,ge_precomp *u,unsigned char b)
 {
   fe_cmov(t->yplusx,u->yplusx,b);
   fe_cmov(t->yminusx,u->yminusx,b);
@@ -31,7 +31,7 @@ static ge_precomp base[32][8] = {
 #include "base.h"
 } ;
 
-static void select_ed25519(ge_precomp *t,int pos,signed char b)
+static inline void select_ed25519(ge_precomp *t,int pos,signed char b)
 {
   ge_precomp minust;
   unsigned char bnegative = negative(b);
@@ -61,7 +61,7 @@ Preconditions:
   a[31] <= 127
 */
 
-void ge_scalarmult_base(ge_p3 *h,const unsigned char *a)
+static inline void ge_scalarmult_base(ge_p3 *h,const unsigned char *a)
 {
   signed char e[64];
   signed char carry;

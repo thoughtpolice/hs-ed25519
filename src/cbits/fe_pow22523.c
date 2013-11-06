@@ -1,6 +1,6 @@
 #include "fe.h"
 
-void fe_pow22523(fe out,const fe z)
+static inline void fe_pow22523(fe out,const fe z)
 {
   fe t0;
   fe t1;

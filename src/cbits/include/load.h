@@ -1,7 +1,7 @@
 #ifndef CRYPTO_LOAD_H
 #define CRYPTO_LOAD_H
 
-static crypto_uint64 load_3(const unsigned char *in)
+static inline crypto_uint64 load_3(const unsigned char *in)
 {
   crypto_uint64 result;
   result = (crypto_uint64) in[0];
@@ -10,7 +10,7 @@ static crypto_uint64 load_3(const unsigned char *in)
   return result;
 }
 
-static crypto_uint64 load_4(const unsigned char *in)
+static inline crypto_uint64 load_4(const unsigned char *in)
 {
   crypto_uint64 result;
   result = (crypto_uint64) in[0];

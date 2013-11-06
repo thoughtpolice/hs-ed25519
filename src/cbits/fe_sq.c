@@ -16,7 +16,7 @@ Postconditions:
 See fe_mul.c for discussion of implementation strategy.
 */
 
-void fe_sq(fe h,const fe f)
+static inline void fe_sq(fe h,const fe f)
 {
   crypto_int32 f0 = f[0];
   crypto_int32 f1 = f[1];

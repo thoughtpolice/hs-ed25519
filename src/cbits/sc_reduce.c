@@ -14,7 +14,7 @@ Output:
   Overwrites s in place.
 */
 
-void sc_reduce(unsigned char *s)
+static inline void sc_reduce(unsigned char *s)
 {
   crypto_int64 s0 = 2097151 & load_3(s);
   crypto_int64 s1 = 2097151 & (load_4(s + 2) >> 5);
