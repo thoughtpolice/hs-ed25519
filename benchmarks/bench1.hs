@@ -12,7 +12,7 @@ import qualified Data.ByteString as B
 --------------------------------------------------------------------------------
 
 #if !MIN_VERSION_bytestring(0,10,0)
-instance NFData ByteString
+instance NFData B.ByteString
 #endif
 
 instance NFData SecretKey
