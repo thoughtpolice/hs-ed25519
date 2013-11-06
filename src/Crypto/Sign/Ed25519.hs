@@ -24,7 +24,7 @@ module Crypto.Sign.Ed25519
          -- * Signing and verifying messages
        , sign                -- :: SecretKey -> ByteString -> ByteString
        , verify              -- :: PublicKey -> ByteString -> Bool
-         -- * Detached signatures.
+         -- * Detached signatures
        , Signature(..)       -- :: *
        , sign'               -- :: SecretKey -> ByteString -> Signature
        , verify'             -- :: PublicKey -> ByteString -> Signature -> Bool
@@ -110,7 +110,7 @@ verify (PublicKey pk) xs =
 --------------------------------------------------------------------------------
 -- Detached signature support
 
--- | A 'Signature'. Used with 'sign\'' and 'verify\''.
+-- | A 'Signature' which is detached from the message it signed.
 newtype Signature = Signature { unSignature :: ByteString }
         deriving (Eq, Show, Ord)
 
