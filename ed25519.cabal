@@ -33,7 +33,6 @@ extra-source-files:
   CHANGELOG.md
   src/cbits/*.c
   src/cbits/include/*.h
-  src/cbits/include/x86/*.h
 
 source-repository head
   type: git
