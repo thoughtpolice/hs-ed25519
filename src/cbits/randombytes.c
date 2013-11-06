@@ -1,3 +1,4 @@
+#ifndef _WIN32
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
@@ -32,3 +33,20 @@ void ed25519_randombytes(unsigned char *x,unsigned long long xlen)
     xlen -= i;
   }
 }
+
+#else
+#include <windows.h>
+#include <wincrypt.h>
+
+void ed25519_randombytes(unsigned char *x,unsigned long long xlen)
+{
+  HCRYPTPROV prov = 0;
+
+  CryptAcquireContextW(&prov, NULL, NULL,
+    PROV_RSA_FULL, CRYPT_VERIFYCONTEXT | CRYPT_SILENT);
+
+  CryptGenRandom(prov, xlen, x);
+  CryptReleaseContext(prov, 0);
+}
+
+#endif /* _WIN32  */
