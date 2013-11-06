@@ -1,6 +1,6 @@
 # Minimal package for ed25519 signatures
 
-[![Build Status](https://secure.travis-ci.org/thoughtpolice/hs-ed25519?branch=master)](http://travis-ci.org/thoughtpolice/hs-ed25519)
+[![Build Status](https://travis-ci.org/thoughtpolice/hs-ed25519.png?branch=master)](https://travis-ci.org/thoughtpolice/hs-ed25519)
 
 This package implements minimal bindings to the [ed25519][] signature
 scheme. It should be relatively easy to both depend on, or include
