@@ -1,6 +1,8 @@
 # Minimal package for ed25519 signatures
 
 [![Build Status](https://travis-ci.org/thoughtpolice/hs-ed25519.png?branch=master)](https://travis-ci.org/thoughtpolice/hs-ed25519)
+[![MIT](http://b.repl.ca/v1/license-MIT-blue.png)](http://en.wikipedia.org/wiki/MIT_License)
+[![Haskell](http://b.repl.ca/v1/language-haskell-lightgrey.png)](http://www.haskell.org)
 
 This package implements minimal bindings to the [ed25519][] signature
 scheme. It should be relatively easy to both depend on, or include
