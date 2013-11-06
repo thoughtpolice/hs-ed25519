@@ -1,5 +1,4 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE CPP #-}
 module Main
        ( main  -- :: IO ()
        ) where
@@ -21,10 +20,6 @@ import Crypto.Sign.Ed25519
 
 --------------------------------------------------------------------------------
 -- Orphans
-
-#if !MIN_VERSION_bytestring(0,10,0)
-instance NFData ByteString
-#endif
 
 instance Arbitrary ByteString where
   arbitrary = pack `liftM` arbitrary

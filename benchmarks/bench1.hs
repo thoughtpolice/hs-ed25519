@@ -1,3 +1,4 @@
+{-# LANGUAGE CPP #-}
 module Main
        ( main -- :: IO ()
        ) where
@@ -5,7 +6,14 @@ module Main
 import Criterion.Main
 import Crypto.Sign.Ed25519
 
+import Control.DeepSeq
 import qualified Data.ByteString as B
+
+--------------------------------------------------------------------------------
+
+#if !MIN_VERSION_bytestring(0,10,0)
+instance NFData ByteString
+#endif
 
 --------------------------------------------------------------------------------
 
