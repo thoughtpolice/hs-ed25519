@@ -95,8 +95,6 @@ library
   cc-options:         -O3 -march=native
   c-sources:          src/cbits/ed25519.c
   include-dirs:       src/cbits src/cbits/include
-  if arch(i386) || arch(x86_64)
-    include-dirs:     src/cbits/include/x86
 
 -------------------------------------------------------------------------------
 -- Build pt 2: Tests
