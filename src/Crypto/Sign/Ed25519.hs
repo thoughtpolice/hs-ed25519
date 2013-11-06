@@ -8,10 +8,10 @@
 -- Stability   : experimental
 -- Portability : portable
 --
--- This module provides bindings to the ed25519 signing system,
--- including detached signatures. The underlying implementation uses
--- the @ref10@ implementation of ed25519 from SUPERCOP, and should be
--- relatively fast.
+-- This module provides bindings to the ed25519 public-key signature
+-- system, including detached signatures. The underlying
+-- implementation uses the @ref10@ implementation of ed25519 from
+-- SUPERCOP, and should be relatively fast.
 --
 -- For more information (including how to get a copy of the software)
 -- visit <http://ed25519.cr.yp.to>.
@@ -87,9 +87,7 @@ sign (SecretKey sk) xs =
           fromIntegral `liftM` peek smlen
 {-# INLINEABLE sign #-}
 
--- | Verifies a signed message with a 'PublicKey'. Returns @Nothing@ if
--- verification fails, or @Just xs@ where @xs@ is the original message if it
--- succeeds.
+-- | Verifies a signed message against a 'PublicKey'.
 verify :: PublicKey
        -- ^ Signers public key
        -> ByteString
@@ -114,8 +112,8 @@ verify (PublicKey pk) xs =
 newtype Signature = Signature { unSignature :: ByteString }
         deriving (Eq, Show, Ord)
 
--- | Sign a message with a particular 'SecretKey', only returning the signature
--- without the message.
+-- | Sign a message with a particular 'SecretKey', only returning the
+-- signature without the message.
 sign' :: SecretKey
       -- ^ Signers secret key
       -> ByteString
@@ -128,11 +126,10 @@ sign' sk xs =
   in Signature $! S.take (l - S.length xs) sm
 {-# INLINEABLE sign' #-}
 
-
--- | Verify that a message came from someone\'s 'PublicKey'
--- using an input message and a signature derived from 'sign\''
+-- | Verify a message with a detached 'Signature', for a given
+-- 'PublicKey'.
 verify' :: PublicKey
-        -- ^ Signers\' public key
+        -- ^ Signers public key
         -> ByteString
         -- ^ Input message, without signature
         -> Signature
