@@ -11,7 +11,8 @@ author:              Austin Seipp
 maintainer:          Austin Seipp <aseipp@pobox.com>
 build-type:          Custom
 cabal-version:       >=1.10
-tested-with:         GHC == 7.6.2
+tested-with:         GHC == 7.4.1, GHC == 7.4.2,
+                     GHC == 7.6.1, GHC == 7.6.2, GHC == 7.6.3
 
 description:
   This package provides a simple, portable implementation of the
