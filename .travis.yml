@@ -75,7 +75,7 @@ script:
  - cabal-1.18 build
 
  - cabal-1.18 test
- - cabal-1.18 check
+#- cabal-1.18 check
 
  # tests that a source-distribution can be generated
  - cabal-1.18 sdist
