@@ -18,13 +18,16 @@
 --
 module Crypto.Sign.Ed25519
        ( -- * Keypair creation
-         createKeypair                 -- :: IO (ByteString, ByteString)
+         PublicKey(..)       -- :: *
+       , SecretKey(..)       -- :: *
+       , createKeypair       -- :: IO (PublicKey, SecretKey)
          -- * Signing and verifying messages
-       , sign                          -- :: ByteString -> ByteString -> ByteString
-       , verify                        -- :: ByteString -> ByteString -> Maybe ByteString
-       , Signature(..)                 -- :: *
-       , sign'                         -- :: ByteString -> ByteString -> Signature
-       , verify'                       -- :: ByteString -> ByteString -> Signature -> Maybe ByteString
+       , sign                -- :: SecretKey -> ByteString -> ByteString
+       , verify              -- :: PublicKey -> ByteString -> Bool
+         -- * Detached signatures.
+       , Signature(..)       -- :: *
+       , sign'               -- :: SecretKey -> ByteString -> Signature
+       , verify'             -- :: PublicKey -> ByteString -> Signature -> Bool
        ) where
 import           Control.Monad            (liftM, void)
 import           Foreign.C.Types
@@ -40,13 +43,20 @@ import           Data.ByteString.Internal as SI
 import           Data.ByteString.Unsafe   as SU
 import           Data.Word
 
--- | A 'Signature'. Used with 'sign\'' and 'verify\''.
-newtype Signature = Signature { unSignature :: ByteString }
+--------------------------------------------------------------------------------
+
+-- | A 'SecretKey' created by 'createKeypair'. Be sure to keep this
+-- safe!
+newtype SecretKey = SecretKey { unSecretKey :: ByteString }
+        deriving (Eq, Show, Ord)
+
+-- | A 'PublicKey' created by 'createKeypair'.
+newtype PublicKey = PublicKey { unPublicKey :: ByteString }
         deriving (Eq, Show, Ord)
 
 -- | Randomly generate a public and private key for doing
 -- authenticated signing and verification.
-createKeypair :: IO (ByteString, ByteString)
+createKeypair :: IO (PublicKey, SecretKey)
 createKeypair = do
   pk <- SI.mallocByteString cryptoSignPUBLICKEYBYTES
   sk <- SI.mallocByteString cryptoSignSECRETKEYBYTES
@@ -55,17 +65,20 @@ createKeypair = do
     void . withForeignPtr sk $ \psk ->
       c_crypto_sign_keypair ppk psk
 
-  return (SI.fromForeignPtr pk 0 cryptoSignPUBLICKEYBYTES,
-          SI.fromForeignPtr sk 0 cryptoSignSECRETKEYBYTES)
+  return (PublicKey $ SI.fromForeignPtr pk 0 cryptoSignPUBLICKEYBYTES,
+          SecretKey $ SI.fromForeignPtr sk 0 cryptoSignSECRETKEYBYTES)
+
+--------------------------------------------------------------------------------
+-- Main API
 
 -- | Sign a message with a particular 'SecretKey'.
-sign :: ByteString
+sign :: SecretKey
      -- ^ Signers secret key
      -> ByteString
      -- ^ Input message
      -> ByteString
      -- ^ Resulting signed message
-sign sk xs =
+sign (SecretKey sk) xs =
   unsafePerformIO . SU.unsafeUseAsCStringLen xs $ \(mstr,mlen) ->
     SU.unsafeUseAsCString sk $ \psk ->
       SI.createAndTrim (mlen+cryptoSignBYTES) $ \out ->
@@ -74,9 +87,36 @@ sign sk xs =
           fromIntegral `liftM` peek smlen
 {-# INLINEABLE sign #-}
 
+-- | Verifies a signed message with a 'PublicKey'. Returns @Nothing@ if
+-- verification fails, or @Just xs@ where @xs@ is the original message if it
+-- succeeds.
+verify :: PublicKey
+       -- ^ Signers public key
+       -> ByteString
+       -- ^ Signed message
+       -> Bool
+       -- ^ Verification check
+verify (PublicKey pk) xs =
+  unsafePerformIO . SU.unsafeUseAsCStringLen xs $ \(smstr,smlen) ->
+    SU.unsafeUseAsCString pk $ \ppk ->
+      alloca $ \pmlen -> do
+        out <- SI.mallocByteString smlen
+        r <- withForeignPtr out $ \pout ->
+               c_crypto_sign_open pout pmlen smstr (fromIntegral smlen) ppk
+
+        return (r == 0)
+{-# INLINEABLE verify #-}
+
+--------------------------------------------------------------------------------
+-- Detached signature support
+
+-- | A 'Signature'. Used with 'sign\'' and 'verify\''.
+newtype Signature = Signature { unSignature :: ByteString }
+        deriving (Eq, Show, Ord)
+
 -- | Sign a message with a particular 'SecretKey', only returning the signature
 -- without the message.
-sign' :: ByteString
+sign' :: SecretKey
       -- ^ Signers secret key
       -> ByteString
       -- ^ Input message
@@ -88,39 +128,16 @@ sign' sk xs =
   in Signature $! S.take (l - S.length xs) sm
 {-# INLINEABLE sign' #-}
 
--- | Verifies a signed message with a 'PublicKey'. Returns @Nothing@ if
--- verification fails, or @Just xs@ where @xs@ is the original message if it
--- succeeds.
-verify :: ByteString
-       -- ^ Signers public key
-       -> ByteString
-       -- ^ Signed message
-       -> Maybe ByteString
-       -- ^ Verification check
-verify pk xs =
-  unsafePerformIO . SU.unsafeUseAsCStringLen xs $ \(smstr,smlen) ->
-    SU.unsafeUseAsCString pk $ \ppk ->
-      alloca $ \pmlen -> do
-        out <- SI.mallocByteString smlen
-
-        r <- withForeignPtr out $ \pout ->
-               c_crypto_sign_open pout pmlen smstr (fromIntegral smlen) ppk
-
-        if r /= 0 then return Nothing
-          else do
-            l <- peek pmlen
-            return . Just $ SI.fromForeignPtr out 0 (fromIntegral l)
-{-# INLINEABLE verify #-}
 
 -- | Verify that a message came from someone\'s 'PublicKey'
 -- using an input message and a signature derived from 'sign\''
-verify' :: ByteString
+verify' :: PublicKey
         -- ^ Signers\' public key
         -> ByteString
         -- ^ Input message, without signature
         -> Signature
         -- ^ Message signature
-        -> Maybe ByteString
+        -> Bool
 verify' pk xs (Signature sig) = verify pk (sig `S.append` xs)
 {-# INLINEABLE verify' #-}
 

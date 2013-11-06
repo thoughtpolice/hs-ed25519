@@ -24,18 +24,21 @@ import Crypto.Sign.Ed25519
 instance Arbitrary ByteString where
   arbitrary = pack `liftM` arbitrary
 
+instance Arbitrary SecretKey where
+  arbitrary = SecretKey `liftM` arbitrary
+
+instance Arbitrary PublicKey where
+  arbitrary = PublicKey `liftM` arbitrary
+
 --------------------------------------------------------------------------------
 -- Signatures
 
-keypairProp :: ((ByteString, ByteString) -> Bool) -> Property
+keypairProp :: ((PublicKey, SecretKey) -> Bool) -> Property
 keypairProp k = morallyDubiousIOProperty $ k `liftM` createKeypair
 
 prop_sign_verify :: ByteString -> Property
 prop_sign_verify xs
-  = keypairProp $ \(pk,sk) ->
-      let s = sign sk xs
-          d = verify pk s
-      in maybe False (== xs) d
+  = keypairProp $ \(pk,sk) -> verify pk (sign sk xs)
 
 -- Generally the signature format is '<signature><original message>'
 -- and <signature> is of a fixed length (crypto_sign_BYTES), which in
@@ -57,7 +60,7 @@ prop_sign'_length2 xs
 prop_verify' :: ByteString -> Property
 prop_verify' xs
   = keypairProp $ \(pk,sk) ->
-      isJust (verify' pk xs $ sign' sk xs)
+      verify' pk xs (sign' sk xs)
 
 --------------------------------------------------------------------------------
 -- Driver

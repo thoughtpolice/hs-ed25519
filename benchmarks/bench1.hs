@@ -15,6 +15,9 @@ import qualified Data.ByteString as B
 instance NFData ByteString
 #endif
 
+instance NFData SecretKey
+instance NFData PublicKey
+
 --------------------------------------------------------------------------------
 
 main :: IO ()
@@ -29,8 +32,5 @@ main = do
     , bench "roundtrip"     $ nf (signBench keys) dummy
     ]
 
-signBench :: (B.ByteString, B.ByteString) -> B.ByteString -> Bool
-signBench (pk, sk) xs
-  = let sm = sign sk xs
-        v  = verify pk sm
-    in maybe False (== xs) v
+signBench :: (PublicKey, SecretKey) -> B.ByteString -> Bool
+signBench (pk, sk) xs = verify pk (sign sk xs)
