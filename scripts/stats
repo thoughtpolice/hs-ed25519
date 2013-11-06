@@ -1,0 +1,10 @@
+#! /bin/bash
+
+g() { git grep --basic-regexp "$@" src | wc -l ; }
+cd "$(git rev-parse --show-toplevel)"
+
+doc="$(g -e '--\s\+>>>\s\+[^:]' --and --not -e '--\s\+>>>\s\+\(import\|let\)' \
+	--or -e '--\s\+>>>\s\+let\s\+.*\<in\>')"
+mod="$(find src -name '*.hs' | wc -l)"
+
+echo "doctests: $doc | modules: $mod"
