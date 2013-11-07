@@ -8,12 +8,12 @@
 #define crypto_sign_IMPLEMENTATION crypto_sign_ed25519_IMPLEMENTATION
 #define crypto_sign_VERSION crypto_sign_ed25519_VERSION
 
-int crypto_sign_keypair(unsigned char *pk,unsigned char *sk);
-int crypto_sign(unsigned char *sm,unsigned long long *smlen,
-                  const unsigned char *m,unsigned long long mlen,
-                  const unsigned char *sk);
-int crypto_sign_open(unsigned char *m,unsigned long long *mlen,
-                     const unsigned char *sm,unsigned long long smlen,
-                     const unsigned char *pk);
+int ed25519_sign_keypair(unsigned char *pk,unsigned char *sk);
+int ed25519_sign(unsigned char *sm,unsigned long long *smlen,
+                 const unsigned char *m,unsigned long long mlen,
+                 const unsigned char *sk);
+int ed25519_sign_open(unsigned char *m,unsigned long long *mlen,
+                      const unsigned char *sm,unsigned long long smlen,
+                      const unsigned char *pk);
 
 #endif /* _ED25519_H_ */

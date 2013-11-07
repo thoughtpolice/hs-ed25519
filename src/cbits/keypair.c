@@ -3,7 +3,7 @@
 #include "sha512.h"
 #include "ge.h"
 
-int crypto_sign_keypair(unsigned char *pk,unsigned char *sk)
+int ed25519_sign_keypair(unsigned char *pk,unsigned char *sk)
 {
   unsigned char h[64];
   ge_p3 A;

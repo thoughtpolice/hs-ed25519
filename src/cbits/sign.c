@@ -3,7 +3,7 @@
 #include "ge.h"
 #include "sc.h"
 
-int crypto_sign(
+int ed25519_sign(
   unsigned char *sm,unsigned long long *smlen,
   const unsigned char *m,unsigned long long mlen,
   const unsigned char *sk

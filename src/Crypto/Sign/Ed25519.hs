@@ -151,13 +151,13 @@ cryptoSignPUBLICKEYBYTES = 32
 cryptoSignBYTES :: Int
 cryptoSignBYTES = 64
 
-foreign import ccall unsafe "crypto_sign_keypair"
+foreign import ccall unsafe "ed25519_sign_keypair"
   c_crypto_sign_keypair :: Ptr Word8 -> Ptr Word8 -> IO CInt
 
-foreign import ccall unsafe "crypto_sign"
+foreign import ccall unsafe "ed25519_sign"
   c_crypto_sign :: Ptr Word8 -> Ptr CULLong ->
                    Ptr CChar -> CULLong -> Ptr CChar -> IO CULLong
 
-foreign import ccall unsafe "crypto_sign_open"
+foreign import ccall unsafe "ed25519_sign_open"
   c_crypto_sign_open :: Ptr Word8 -> Ptr CULLong ->
                         Ptr CChar -> CULLong -> Ptr CChar -> IO CInt
