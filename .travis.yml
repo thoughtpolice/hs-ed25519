@@ -60,6 +60,7 @@ before_install:
 
 install:
  - cabal-1.18 update
+ - cabal-1.18 install Cabal-1.18.1.2
  - cabal-1.18 install --only-dependencies --enable-tests -f-test-hlint
 
 # Here starts the actual work to be performed for the package under
