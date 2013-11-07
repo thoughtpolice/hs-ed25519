@@ -1,4 +1,5 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
+{-# LANGUAGE CPP #-}
 module Main
        ( main  -- :: IO ()
        ) where
@@ -85,5 +86,9 @@ tests ntests =
       case r of
         Success n _ _           -> return (True, n)
         GaveUp  n _ _           -> return (True, n)
+#if MIN_VERSION_QuickCheck(2,6,0)
         Failure n _ _ _ _ _ _ _ -> return (False, n)
+#else
+        Failure n _ _ _ _ _ _   -> return (False, n)
+#endif
         _                       -> return (False, 0)
