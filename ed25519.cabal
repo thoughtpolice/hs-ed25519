@@ -49,10 +49,6 @@ flag test-hlint
   default: True
   manual: True
 
-flag threaded
-  default: True
-  manual: True
-
 -------------------------------------------------------------------------------
 -- Build pt 1: main project
 
@@ -80,9 +76,6 @@ test-suite properties
   hs-source-dirs: tests
   default-language:   Haskell98
 
-  if flag(threaded)
-    ghc-options: -threaded -rtsopts -with-rtsopts=-N
-
   if !flag(test-properties)
     buildable: False
   else
@@ -102,9 +95,6 @@ test-suite hlint
   ghc-options: -w
   hs-source-dirs: tests
   default-language:   Haskell98
-
-  if flag(threaded)
-    ghc-options: -threaded -rtsopts -with-rtsopts=-N
 
   if !flag(test-hlint)
     buildable: False
