@@ -1,28 +1,23 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 module Main
        ( main  -- :: IO ()
        ) where
-import Prelude
-import Data.List as List
-import Data.Maybe
-import Data.Function
-import Control.Monad
-import Control.DeepSeq
-import Debug.Trace
+import           Control.Monad
+import           Data.ByteString          (ByteString)
+import qualified Data.ByteString          as S
 
-import Test.Tasty
-import Test.Tasty.TH
-import Test.Tasty.QuickCheck as QC
-import Test.QuickCheck.Property
+import           Crypto.Sign.Ed25519
 
-import Data.ByteString as S
-import Crypto.Sign.Ed25519
+import           System.Environment       (getArgs)
+import           Test.QuickCheck
+import           Test.QuickCheck.Property (morallyDubiousIOProperty)
+import           Text.Printf
 
 --------------------------------------------------------------------------------
 -- Orphans
 
 instance Arbitrary ByteString where
-  arbitrary = pack `liftM` arbitrary
+  arbitrary = S.pack `liftM` arbitrary
 
 instance Arbitrary SecretKey where
   arbitrary = SecretKey `liftM` arbitrary
@@ -36,34 +31,59 @@ instance Arbitrary PublicKey where
 keypairProp :: ((PublicKey, SecretKey) -> Bool) -> Property
 keypairProp k = morallyDubiousIOProperty $ k `liftM` createKeypair
 
-prop_sign_verify :: ByteString -> Property
-prop_sign_verify xs
+roundtrip :: ByteString -> Property
+roundtrip xs
   = keypairProp $ \(pk,sk) -> verify pk (sign sk xs)
+
+roundtrip' :: ByteString -> Property
+roundtrip' xs
+  = keypairProp $ \(pk,sk) -> verify' pk xs (sign' sk xs)
 
 -- Generally the signature format is '<signature><original message>'
 -- and <signature> is of a fixed length (crypto_sign_BYTES), which in
 -- ed25519's case is 64. sign' drops the message appended at the end,
 -- so we just make sure we have constant length signatures.
-prop_sign'_length :: ByteString -> ByteString -> Property
-prop_sign'_length xs xs2
-  = keypairProp $ \(pk,sk) ->
+signLength :: (ByteString,ByteString) -> Property
+signLength (xs,xs2)
+  = keypairProp $ \(_,sk) ->
       let s1 = unSignature $ sign' sk xs
           s2 = unSignature $ sign' sk xs2
       in S.length s1 == S.length s2
 
 -- ed25519 has a sig length of 64
-prop_sign'_length2 :: ByteString -> Property
-prop_sign'_length2 xs
-  = keypairProp $ \(pk,sk) ->
+signLength2 :: ByteString -> Property
+signLength2 xs
+  = keypairProp $ \(_,sk) ->
       (64 == S.length (unSignature $ sign' sk xs))
-
-prop_verify' :: ByteString -> Property
-prop_verify' xs
-  = keypairProp $ \(pk,sk) ->
-      verify' pk xs (sign' sk xs)
 
 --------------------------------------------------------------------------------
 -- Driver
 
 main :: IO ()
-main = $(defaultMainGenerator)
+main = do
+  args <- fmap (drop 1) getArgs
+  let n = if null args then 100 else read (head args) :: Int
+  (results, passed) <- runTests n
+  printf "Passed %d tests!\n" (sum passed)
+  unless (and results) (fail "Not all tests passed!")
+
+runTests :: Int -> IO ([Bool], [Int])
+runTests ntests = fmap unzip . forM (tests ntests) $ \(s, a) ->
+  printf "%-40s: " s >> a
+
+tests :: Int -> [(String, IO (Bool,Int))]
+tests ntests =
+  [ ("Signature roundtrip",            wrap roundtrip)
+  , ("Detached signature roundtrip",   wrap roundtrip')
+  , ("Detached signature length",      wrap signLength)
+  , ("Detached signature length (#2)", wrap signLength2)
+  ]
+  where
+    wrap :: Testable prop => prop -> IO (Bool, Int)
+    wrap prop = do
+      r <- quickCheckWithResult stdArgs{maxSize=ntests} prop
+      case r of
+        Success n _ _           -> return (True, n)
+        GaveUp  n _ _           -> return (True, n)
+        Failure n _ _ _ _ _ _ _ -> return (False, n)
+        _                       -> return (False, 0)

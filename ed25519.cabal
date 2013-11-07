@@ -9,7 +9,7 @@ license-file:        LICENSE.txt
 copyright:           Copyright (c) Austin Seipp 2013
 author:              Austin Seipp
 maintainer:          Austin Seipp <aseipp@pobox.com>
-build-type:          Custom
+build-type:          Simple
 cabal-version:       >=1.10
 tested-with:         GHC == 7.4.1, GHC == 7.4.2,
                      GHC == 7.6.1, GHC == 7.6.2, GHC == 7.6.3
@@ -45,29 +45,11 @@ flag test-properties
   default: True
   manual: True
 
--- Enable these when/if we need them.
-flag test-hunit
-  default: False
-  manual: True
-
--- Can't run due to needing C library apparently?
-flag test-doctests
-  default: False
-  manual: True
-
 flag test-hlint
   default: True
   manual: True
 
 flag threaded
-  default: True
-  manual: True
-
-flag llvm
-  default: False
-  manual: True
-
-flag optimized
   default: True
   manual: True
 
@@ -82,16 +64,9 @@ library
   exposed-modules:
     Crypto.Sign.Ed25519
 
-  if flag(optimized)
-    ghc-options: -O2
-
-  if flag(llvm)
-    ghc-options: -fllvm
-
   ghc-options:        -Wall -fwarn-tabs
   default-language:   Haskell2010
   hs-source-dirs:     src
-  cc-options:         -O3 -march=native
   c-sources:          src/cbits/ed25519.c
   include-dirs:       src/cbits src/cbits/include
 
@@ -108,9 +83,6 @@ test-suite properties
   if flag(threaded)
     ghc-options: -threaded -rtsopts -with-rtsopts=-N
 
-  if flag(llvm)
-    ghc-options: -fllvm
-
   if !flag(test-properties)
     buildable: False
   else
@@ -118,37 +90,7 @@ test-suite properties
       base,
       ed25519,
       bytestring,
-      deepseq,
-      QuickCheck       >= 2.4,
-      tasty            >= 0.3,
-      tasty-quickcheck >= 0.3,
-      tasty-th         >= 0.1.1
-
-test-suite hunit
-  type: exitcode-stdio-1.0
-  main-is: hunit.hs
-  ghc-options: -w
-  hs-source-dirs: tests
-  default-language:   Haskell2010
-
-  if flag(threaded)
-    ghc-options: -threaded -rtsopts -with-rtsopts=-N
-
-  if flag(llvm)
-    ghc-options: -fllvm
-
-  if !flag(test-hunit)
-    buildable: False
-  else
-    build-depends:
-      base,
-      ed25519,
-      bytestring,
-      deepseq,
-      QuickCheck       >= 2.4,
-      tasty            >= 0.3,
-      tasty-hunit      >= 0.2,
-      tasty-th         >= 0.1.1
+      QuickCheck  >= 2.4
 
 --
 -- Style/doc tests below
@@ -164,44 +106,12 @@ test-suite hlint
   if flag(threaded)
     ghc-options: -threaded -rtsopts -with-rtsopts=-N
 
-  if flag(llvm)
-    ghc-options: -fllvm
-
   if !flag(test-hlint)
     buildable: False
   else
     build-depends:
       base,
       hlint >= 1.7
-
-test-suite doctests
-  type:           exitcode-stdio-1.0
-  main-is:        doctests.hs
-  ghc-options:    -Wall
-  hs-source-dirs: tests
-  default-language:   Haskell2010
-
-  if flag(threaded)
-    ghc-options: -threaded -rtsopts -with-rtsopts=-N
-
-  if flag(llvm)
-    ghc-options: -fllvm
-
-  if !flag(test-doctests)
-    buildable: False
-  else
-    build-depends:
-      base,
-      bytestring,
-      containers,
-      directory      >= 1.0,
-      deepseq,
-      doctest        >= 0.9.1,
-      filepath,
-      semigroups     >= 0.9
-
-  if impl(ghc<7.6.1)
-    ghc-options: -Werror
 
 -------------------------------------------------------------------------------
 -- Build pt 3: benchmarks
@@ -214,12 +124,6 @@ benchmark bench1
     criterion,
     deepseq,
     ed25519
-
-  if flag(optimized)
-    ghc-options: -O2
-
-  if flag(llvm)
-    ghc-options: -fllvm
 
   default-language:   Haskell2010
   hs-source-dirs:     benchmarks
