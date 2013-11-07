@@ -86,7 +86,7 @@ sign (SecretKey sk) xs =
         alloca $ \smlen -> do
           _ <- (c_crypto_sign out smlen mstr (fromIntegral mlen) psk)
           fromIntegral `fmap` peek smlen
-{-# INLINEABLE sign #-}
+{-# INLINE sign #-}
 
 -- | Verifies a signed message against a 'PublicKey'.
 verify :: PublicKey
@@ -104,7 +104,7 @@ verify (PublicKey pk) xs =
                c_crypto_sign_open pout pmlen smstr (fromIntegral smlen) ppk
 
         return (r == 0)
-{-# INLINEABLE verify #-}
+{-# INLINE verify #-}
 
 --------------------------------------------------------------------------------
 -- Detached signature support
@@ -125,7 +125,7 @@ sign' sk xs =
   let sm = sign sk xs
       l  = S.length sm
   in Signature $! S.take (l - S.length xs) sm
-{-# INLINEABLE sign' #-}
+{-# INLINE sign' #-}
 
 -- | Verify a message with a detached 'Signature', for a given
 -- 'PublicKey'.
@@ -137,7 +137,7 @@ verify' :: PublicKey
         -- ^ Message signature
         -> Bool
 verify' pk xs (Signature sig) = verify pk (sig `S.append` xs)
-{-# INLINEABLE verify' #-}
+{-# INLINE verify' #-}
 
 --
 -- FFI signature binding
