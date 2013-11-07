@@ -29,7 +29,6 @@ module Crypto.Sign.Ed25519
        , sign'               -- :: SecretKey -> ByteString -> Signature
        , verify'             -- :: PublicKey -> ByteString -> Signature -> Bool
        ) where
-import           Control.Monad            (liftM, void)
 import           Foreign.C.Types
 import           Foreign.ForeignPtr       (withForeignPtr)
 import           Foreign.Marshal.Alloc    (alloca)
@@ -61,9 +60,11 @@ createKeypair = do
   pk <- SI.mallocByteString cryptoSignPUBLICKEYBYTES
   sk <- SI.mallocByteString cryptoSignSECRETKEYBYTES
 
-  void . withForeignPtr pk $ \ppk ->
-    void . withForeignPtr sk $ \psk ->
-      c_crypto_sign_keypair ppk psk
+  _ <- withForeignPtr pk $ \ppk -> do
+    _ <- withForeignPtr sk $ \psk -> do
+      _ <- c_crypto_sign_keypair ppk psk
+      return ()
+    return ()
 
   return (PublicKey $ SI.fromForeignPtr pk 0 cryptoSignPUBLICKEYBYTES,
           SecretKey $ SI.fromForeignPtr sk 0 cryptoSignSECRETKEYBYTES)
@@ -83,8 +84,8 @@ sign (SecretKey sk) xs =
     SU.unsafeUseAsCString sk $ \psk ->
       SI.createAndTrim (mlen+cryptoSignBYTES) $ \out ->
         alloca $ \smlen -> do
-          void (c_crypto_sign out smlen mstr (fromIntegral mlen) psk)
-          fromIntegral `liftM` peek smlen
+          _ <- (c_crypto_sign out smlen mstr (fromIntegral mlen) psk)
+          fromIntegral `fmap` peek smlen
 {-# INLINEABLE sign #-}
 
 -- | Verifies a signed message against a 'PublicKey'.
