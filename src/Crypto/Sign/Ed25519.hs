@@ -84,7 +84,7 @@ sign (SecretKey sk) xs =
     SU.unsafeUseAsCString sk $ \psk ->
       SI.createAndTrim (mlen+cryptoSignBYTES) $ \out ->
         alloca $ \smlen -> do
-          _ <- (c_crypto_sign out smlen mstr (fromIntegral mlen) psk)
+          _ <- c_crypto_sign out smlen mstr (fromIntegral mlen) psk
           fromIntegral `fmap` peek smlen
 {-# INLINE sign #-}
 
