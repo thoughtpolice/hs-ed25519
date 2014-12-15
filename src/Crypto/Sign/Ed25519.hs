@@ -18,16 +18,17 @@
 --
 module Crypto.Sign.Ed25519
        ( -- * Keypair creation
-         PublicKey(..)       -- :: *
-       , SecretKey(..)       -- :: *
-       , createKeypair       -- :: IO (PublicKey, SecretKey)
+         PublicKey(..)         -- :: *
+       , SecretKey(..)         -- :: *
+       , createKeypair         -- :: IO (PublicKey, SecretKey)
+       , createKeypairFromSeed -- :: ByteString -> (PublicKey, SecretKey)
          -- * Signing and verifying messages
-       , sign                -- :: SecretKey -> ByteString -> ByteString
-       , verify              -- :: PublicKey -> ByteString -> Bool
+       , sign                  -- :: SecretKey -> ByteString -> ByteString
+       , verify                -- :: PublicKey -> ByteString -> Bool
          -- * Detached signatures
-       , Signature(..)       -- :: *
-       , sign'               -- :: SecretKey -> ByteString -> Signature
-       , verify'             -- :: PublicKey -> ByteString -> Signature -> Bool
+       , Signature(..)         -- :: *
+       , sign'                 -- :: SecretKey -> ByteString -> Signature
+       , verify'               -- :: PublicKey -> ByteString -> Signature -> Bool
        ) where
 import           Foreign.C.Types
 import           Foreign.ForeignPtr       (withForeignPtr)
@@ -36,6 +37,8 @@ import           Foreign.Ptr
 import           Foreign.Storable
 
 import           System.IO.Unsafe         (unsafePerformIO)
+
+import           Control.Monad            (unless)
 
 import           Data.ByteString          as S
 import           Data.ByteString.Internal as SI
@@ -63,6 +66,25 @@ createKeypair = do
   _ <- withForeignPtr pk $ \ppk -> do
     _ <- withForeignPtr sk $ \psk -> do
       _ <- c_crypto_sign_keypair ppk psk
+      return ()
+    return ()
+
+  return (PublicKey $ SI.fromForeignPtr pk 0 cryptoSignPUBLICKEYBYTES,
+          SecretKey $ SI.fromForeignPtr sk 0 cryptoSignSECRETKEYBYTES)
+
+-- | Generate a public and private key from a given 2-byte seed.
+createKeypairFromSeed :: ByteString -> (PublicKey, SecretKey)
+createKeypairFromSeed seed = unsafePerformIO $ do
+  unless (S.length seed == cryptoSignSEEDBYTES)
+    (fail "seed has incorrect length")
+  pk <- SI.mallocByteString cryptoSignPUBLICKEYBYTES
+  sk <- SI.mallocByteString cryptoSignSECRETKEYBYTES
+
+  _ <- SU.unsafeUseAsCString seed $ \pseed -> do
+    _ <- withForeignPtr pk $ \ppk -> do
+      _ <- withForeignPtr sk $ \psk -> do
+        _ <- c_crypto_sign_seed_keypair ppk psk pseed
+        return ()
       return ()
     return ()
 
@@ -151,6 +173,13 @@ cryptoSignPUBLICKEYBYTES = 32
 
 cryptoSignBYTES :: Int
 cryptoSignBYTES = 64
+
+cryptoSignSEEDBYTES :: Int
+cryptoSignSEEDBYTES = 32
+
+foreign import ccall unsafe "ed25519_sign_seed_keypair"
+  c_crypto_sign_seed_keypair :: Ptr Word8 -> Ptr Word8
+                                -> Ptr CChar -> IO CInt
 
 foreign import ccall unsafe "ed25519_sign_keypair"
   c_crypto_sign_keypair :: Ptr Word8 -> Ptr Word8 -> IO CInt
