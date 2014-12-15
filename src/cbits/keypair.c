@@ -1,23 +1,35 @@
+#include <string.h>
 #include "randombytes.h"
 #include "ed25519.h"
 #include "sha512.h"
 #include "ge.h"
 
-int ed25519_sign_keypair(unsigned char *pk,unsigned char *sk)
+int ed25519_sign_seed_keypair(unsigned char *pk, unsigned char *sk,
+                              const unsigned char *seed)
 {
-  unsigned char h[64];
-  ge_p3 A;
-  int i;
+    ge_p3 A;
 
-  ed25519_randombytes(sk,32);
-  crypto_hash_sha512(h,sk,32);
-  h[0] &= 248;
-  h[31] &= 63;
-  h[31] |= 64;
+    crypto_hash_sha512(sk,seed,32);
+    sk[0] &= 248;
+    sk[31] &= 63;
+    sk[31] |= 64;
 
-  ge_scalarmult_base(&A,h);
-  ge_p3_tobytes(pk,&A);
+    ge_scalarmult_base(&A,sk);
+    ge_p3_tobytes(pk,&A);
 
-  for (i = 0;i < 32;++i) sk[32 + i] = pk[i];
-  return 0;
+    memmove(sk, seed, 32);
+    memmove(sk + 32, pk, 32);
+    return 0;
+}
+
+int ed25519_sign_keypair(unsigned char *pk, unsigned char *sk)
+{
+    unsigned char seed[32];
+    int           ret;
+
+    ed25519_randombytes(seed, sizeof seed);
+    ret = ed25519_sign_seed_keypair(pk, sk, seed);
+    memset(seed, 0, sizeof seed);
+
+    return ret;
 }
