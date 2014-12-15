@@ -8,6 +8,8 @@
 #define crypto_sign_IMPLEMENTATION crypto_sign_ed25519_IMPLEMENTATION
 #define crypto_sign_VERSION crypto_sign_ed25519_VERSION
 
+int ed25519_sign_seed_keypair(unsigned char *pk, unsigned char *sk,
+                              const unsigned char *seed);
 int ed25519_sign_keypair(unsigned char *pk,unsigned char *sk);
 int ed25519_sign(unsigned char *sm,unsigned long long *smlen,
                  const unsigned char *m,unsigned long long mlen,
