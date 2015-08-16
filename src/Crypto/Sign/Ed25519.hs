@@ -21,6 +21,7 @@ module Crypto.Sign.Ed25519
          PublicKey(..)       -- :: *
        , SecretKey(..)       -- :: *
        , createKeypair       -- :: IO (PublicKey, SecretKey)
+       , toPublicKey         -- :: SecretKey -> PublicKey
          -- * Signing and verifying messages
        , sign                -- :: SecretKey -> ByteString -> ByteString
        , verify              -- :: PublicKey -> ByteString -> Bool
@@ -68,6 +69,10 @@ createKeypair = do
 
   return (PublicKey $ SI.fromForeignPtr pk 0 cryptoSignPUBLICKEYBYTES,
           SecretKey $ SI.fromForeignPtr sk 0 cryptoSignSECRETKEYBYTES)
+
+-- | Derive the public key from secret key. 
+toPublicKey :: SecretKey -> PublicKey
+toPublicKey = PublicKey . S.drop (cryptoSignSECRETKEYBYTES - cryptoSignPUBLICKEYBYTES) . unSecretKey
 
 --------------------------------------------------------------------------------
 -- Main API
