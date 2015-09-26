@@ -70,7 +70,7 @@ createKeypair = do
   return (PublicKey $ SI.fromForeignPtr pk 0 cryptoSignPUBLICKEYBYTES,
           SecretKey $ SI.fromForeignPtr sk 0 cryptoSignSECRETKEYBYTES)
 
--- | Derive the public key from secret key. 
+-- | Derive the public key from secret key.
 toPublicKey :: SecretKey -> PublicKey
 toPublicKey = PublicKey . S.drop (cryptoSignSECRETKEYBYTES - cryptoSignPUBLICKEYBYTES) . unSecretKey
 
