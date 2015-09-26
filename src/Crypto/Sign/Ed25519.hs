@@ -1,4 +1,11 @@
+{-# LANGUAGE CPP #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
+{-# LANGUAGE StandaloneDeriving #-}
+
+#if __GLASGOW_HASKELL__ >= 702
+{-# LANGUAGE DeriveGeneric #-}
+#endif
+
 -- |
 -- Module      : Crypto.Sign.Ed25519
 -- Copyright   : (c) Austin Seipp 2013
@@ -43,6 +50,10 @@ import           Data.ByteString.Internal as SI
 import           Data.ByteString.Unsafe   as SU
 import           Data.Word
 
+#if __GLASGOW_HASKELL__ >= 702
+import           GHC.Generics             (Generic)
+#endif
+
 --------------------------------------------------------------------------------
 
 -- | A 'SecretKey' created by 'createKeypair'. Be sure to keep this
@@ -53,6 +64,11 @@ newtype SecretKey = SecretKey { unSecretKey :: ByteString }
 -- | A 'PublicKey' created by 'createKeypair'.
 newtype PublicKey = PublicKey { unPublicKey :: ByteString }
         deriving (Eq, Show, Ord)
+
+#if __GLASGOW_HASKELL__ >= 702
+deriving instance Generic PublicKey
+deriving instance Generic SecretKey
+#endif
 
 -- | Randomly generate a public and private key for doing
 -- authenticated signing and verification.
@@ -144,9 +160,8 @@ verify' :: PublicKey
 verify' pk xs (Signature sig) = verify pk (sig `S.append` xs)
 {-# INLINE verify' #-}
 
---
--- FFI signature binding
---
+--------------------------------------------------------------------------------
+-- FFI binding
 
 cryptoSignSECRETKEYBYTES :: Int
 cryptoSignSECRETKEYBYTES = 64
