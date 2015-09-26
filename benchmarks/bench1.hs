@@ -23,7 +23,7 @@ instance NFData PublicKey
 main :: IO ()
 main = do
   keys@(pk,sk) <- createKeypair
-  let dummy = B.pack [1..512]
+  let dummy = B.pack [0..255]
       msg = sign sk dummy
   defaultMain
     [ bench "createKeypair" $ nfIO createKeypair
