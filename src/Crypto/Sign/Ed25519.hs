@@ -92,8 +92,8 @@ createKeypair = do
           SecretKey $ SI.fromForeignPtr sk 0 cryptoSignSECRETKEYBYTES)
 
 -- | Generate a deterministic @'PublicKey'@ and @'SecretKey'@ from a
--- given 2-byte seed. Note that this will @'fail'@ if the given input
--- is not two bytes in length.
+-- given 32-byte seed. Note that this will @'fail'@ if the given input
+-- is not 32 bytes in length.
 createKeypairFromSeed :: ByteString             -- ^ Two byte seed input
                       -> (PublicKey, SecretKey) -- ^ Resulting keypair
 createKeypairFromSeed seed = unsafePerformIO $ do
