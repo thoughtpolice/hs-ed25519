@@ -1,8 +1,8 @@
 {-# LANGUAGE CPP #-}
 {-# LANGUAGE ForeignFunctionInterface #-}
-{-# LANGUAGE StandaloneDeriving #-}
 
 #if __GLASGOW_HASKELL__ >= 702
+{-# LANGUAGE StandaloneDeriving #-}
 {-# LANGUAGE DeriveGeneric #-}
 #endif
 
