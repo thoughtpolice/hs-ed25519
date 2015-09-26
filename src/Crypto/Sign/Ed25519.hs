@@ -30,13 +30,15 @@ module Crypto.Sign.Ed25519
        , toPublicKey           -- :: SecretKey -> PublicKey
        , createKeypair         -- :: IO (PublicKey, SecretKey)
        , createKeypairFromSeed -- :: ByteString -> (PublicKey, SecretKey)
+
          -- * Signing and verifying messages
-       , sign                  -- :: SecretKey -> ByteString -> ByteString
-       , verify                -- :: PublicKey -> ByteString -> Bool
+       , sign                 -- :: SecretKey -> ByteString -> ByteString
+       , verify               -- :: PublicKey -> ByteString -> Bool
+
          -- * Detached signatures
-       , Signature(..)         -- :: *
-       , sign'                 -- :: SecretKey -> ByteString -> Signature
-       , verify'               -- :: PublicKey -> ByteString -> Signature -> Bool
+       , Signature(..)        -- :: *
+       , sign'                -- :: SecretKey -> ByteString -> Signature
+       , verify'              -- :: PublicKey -> ByteString -> Signature -> Bool
        ) where
 import           Foreign.C.Types
 import           Foreign.ForeignPtr       (withForeignPtr)
@@ -91,7 +93,8 @@ createKeypair = do
 
 -- | Derive the public key from secret key.
 toPublicKey :: SecretKey -> PublicKey
-toPublicKey = PublicKey . S.drop (cryptoSignSECRETKEYBYTES - cryptoSignPUBLICKEYBYTES) . unSecretKey
+toPublicKey = PublicKey . S.drop prefixBytes  . unSecretKey
+  where prefixBytes = cryptoSignSECRETKEYBYTES - cryptoSignPUBLICKEYBYTES
 
 -- | Generate a public and private key from a given 2-byte seed.
 createKeypairFromSeed :: ByteString -> (PublicKey, SecretKey)
