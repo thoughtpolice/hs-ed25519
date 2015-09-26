@@ -8,7 +8,7 @@
 
 -- |
 -- Module      : Crypto.Sign.Ed25519
--- Copyright   : (c) Austin Seipp 2013
+-- Copyright   : (c) Austin Seipp 2013-2015
 -- License     : MIT
 --
 -- Maintainer  : aseipp@pobox.com

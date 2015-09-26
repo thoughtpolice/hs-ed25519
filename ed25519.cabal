@@ -6,7 +6,7 @@ synopsis:            ed25519 cryptographic signatures
 homepage:            http://thoughtpolice.github.com/hs-ed25519
 bug-reports:         http://github.com/thoughtpolice/hs-ed25519/issues
 license-file:        LICENSE.txt
-copyright:           Copyright (c) Austin Seipp 2013
+copyright:           Copyright (c) Austin Seipp 2013-2015
 author:              Austin Seipp
 maintainer:          Austin Seipp <aseipp@pobox.com>
 build-type:          Simple
