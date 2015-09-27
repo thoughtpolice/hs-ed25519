@@ -256,6 +256,10 @@ verify (PublicKey pk) xs =
 newtype Signature = Signature { unSignature :: ByteString }
         deriving (Eq, Show, Ord)
 
+#if __GLASGOW_HASKELL__ >= 702
+deriving instance Generic Signature
+#endif
+
 -- | Sign a message with a particular @'SecretKey'@, only returning the
 -- @'Signature'@ without the message.
 --
