@@ -6,6 +6,7 @@ module Main
 import Criterion.Main
 import Crypto.Sign.Ed25519
 
+import Data.Maybe (fromJust)
 import Control.DeepSeq
 import qualified Data.ByteString as B
 
@@ -22,14 +23,21 @@ instance NFData PublicKey
 
 main :: IO ()
 main = do
-  keys@(pk,sk) <- createKeypair
-  let dummy = B.pack [0..255]
+  -- Don't use `createKeypair`, since that will incur a ton of calls
+  -- to the OS to generate randomness. Simply generate a bogus Ed25519
+  -- seed instead.
+  let seed         = B.pack [0..31]
+      keys@(pk,sk) = fromJust (createKeypairFromSeed_ seed)
+
+      -- Generate a dummy message to sign, and a signature to verify
+      -- against.
+      dummy = B.pack [0..255]
       msg = sign sk dummy
   defaultMain
-    [ bench "createKeypair" $ nfIO createKeypair
-    , bench "sign"          $ nf (sign sk)        dummy
-    , bench "verify"        $ nf (verify pk)      msg
-    , bench "roundtrip"     $ nf (signBench keys) dummy
+    [ bench "deterministic key generation"   $ nf createKeypairFromSeed_ seed
+    , bench "signing a 256 byte message"     $ nf (sign sk)              dummy
+    , bench "verifying a signature"          $ nf (verify pk)            msg
+    , bench "roundtrip 256-byte sign/verify" $ nf (signBench keys)       dummy
     ]
 
 signBench :: (PublicKey, SecretKey) -> B.ByteString -> Bool

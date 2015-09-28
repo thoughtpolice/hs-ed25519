@@ -508,11 +508,33 @@ foreign import ccall unsafe "ed25519_sign_open"
 -- faster at signing messages /at the same 128-bit security level/.
 --
 -- On the author's Sandy Bridge i5-2520M 2.50GHz CPU, the benchmarking
--- results included with the code report the following numbers for the
--- Haskell interface:
+-- code included with the library reports the following numbers for
+-- the Haskell interface:
 --
 -- @
--- TODO FIXME
+-- benchmarking deterministic key generation
+-- time                 250.0 μs   (249.8 μs .. 250.3 μs)
+--                      1.000 R²   (1.000 R² .. 1.000 R²)
+-- mean                 250.0 μs   (249.9 μs .. 250.2 μs)
+-- std dev              467.0 ns   (331.7 ns .. 627.9 ns)
+--
+-- benchmarking signing a 256 byte message
+-- time                 273.2 μs   (273.0 μs .. 273.4 μs)
+--                      1.000 R²   (1.000 R² .. 1.000 R²)
+-- mean                 273.3 μs   (273.1 μs .. 273.5 μs)
+-- std dev              616.2 ns   (374.1 ns .. 998.8 ns)
+--
+-- benchmarking verifying a signature
+-- time                 635.7 μs   (634.6 μs .. 637.3 μs)
+--                      1.000 R²   (1.000 R² .. 1.000 R²)
+-- mean                 635.4 μs   (635.0 μs .. 636.0 μs)
+-- std dev              1.687 μs   (999.3 ns .. 2.487 μs)
+--
+-- benchmarking roundtrip 256-byte sign/verify
+-- time                 923.6 μs   (910.0 μs .. 950.6 μs)
+--                      0.998 R²   (0.996 R² .. 1.000 R²)
+-- mean                 913.2 μs   (910.6 μs .. 923.0 μs)
+-- std dev              15.93 μs   (1.820 μs .. 33.72 μs)
 -- @
 --
 -- In the future, this package will hopefully provide an opt-in (or
