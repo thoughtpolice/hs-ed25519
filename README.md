@@ -5,14 +5,17 @@
 [![Haskell](http://b.repl.ca/v1/language-haskell-lightgrey.png)](http://www.haskell.org)
 
 This package implements minimal bindings to the [ed25519][] signature
-scheme. It should be relatively easy to both depend on, or include
-outright in your executable/package itself.
+scheme. It's designed to be small, with no dependencies, and fast. It
+also comes with extensive guidelines and detailed documentation. It
+should be relatively easy to both depend on directly with Cabal or
+even copy into any projects that need it directly.
 
-The underlying implementation is the `ref10` code from [SUPERCOP][],
-which was originally implemented by Dan J. Bernstein.
+For full details (including notes on the underlying implementation),
+check out [the docs][].
 
 [ed25519]: http://ed25519.cr.yp.to/
 [SUPERCOP]: http://bench.cr.yp.to/supercop.html
+[the docs]: http://hackage.haskell.org/package/ed25519/docs/Crypto-Sign-Ed25519.html
 
 # Installation
 

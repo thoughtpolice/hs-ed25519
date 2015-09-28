@@ -24,14 +24,26 @@
 -- security notes, which you may want to read carefully before
 -- continuing. (Nonetheless, @Ed25519@ is one of the easiest-to-use
 -- signature systems around, and is simple to get started with for
--- building more complex protocols.)
+-- building more complex protocols. But the below details are highly
+-- educational and should help adjust your expectations properly.)
 --
 -- For more reading on the underlying implementation and theory
 -- (including how to get a copy of the software Ed25519 software),
--- visit <http://ed25519.cr.yp.to>. In particular, the full algorithm
--- is defined in the paper
--- <http://ed25519.cr.yp.to/ed25519-20110926.pdf "High-speed high-security signatures">
--- by Bernstein, Duif, Lange, Schwabe, and Yang.
+-- visit <http://ed25519.cr.yp.to>. There are two papers that discuss
+-- the design of EdDSA/Ed25519 in detail:
+--
+--   * <http://ed25519.cr.yp.to/ed25519-20110926.pdf "High-speed high-security signatures"> -
+--   The original specification by Bernstein, Duif, Lange, Schwabe,
+--   and Yang.
+--
+--   * <http://ed25519.cr.yp.to/eddsa-20150704.pdf "EdDSA for more curves"> -
+--   An extension of the original EdDSA specification allowing it to
+--   be used with more curves (such as Ed41417, or Ed488), as well as
+--   defining the support for __message prehashing__. The original
+--   EdDSA is easily derived from the extended version through a few
+--   parameter defaults. (This package will not consider non-Ed25519
+--   EdDSA systems any further.)
+--
 --
 module Crypto.Sign.Ed25519
        ( -- * Keypair creation
@@ -63,19 +75,19 @@ module Crypto.Sign.Ed25519
          -- $security
 
          -- ** EdDSA background and properties
-         -- $secbackground
+         -- $background
 
          -- *** Generation of psuedo-random seeds
-         -- $secseedgen
+         -- $seedgen
 
          -- ** Performance and implementation
-         -- $secperformance
+         -- $performance
 
          -- ** Secure @'SecretKey'@ storage
-         -- $seckeystorage
+         -- $keystorage
 
          -- ** Prehashing and large input messages
-         -- $secprehashing
+         -- $prehashing
        ) where
 import           Foreign.C.Types
 import           Foreign.ForeignPtr       (withForeignPtr)
@@ -429,38 +441,49 @@ foreign import ccall unsafe "ed25519_sign_open"
 
 
 
--- $secbackground
+-- $background
 --
--- Ed25519 is a specific instantiation of the __EdDSA__ digital signature
--- scheme - a high performance, secure-by-design variant of Schnorr
--- signatures based on "Twisted Edwards Curves" (hence the name
--- __Ed__DSA).
+-- Ed25519 is a specific instantiation of the __EdDSA__ digital
+-- signature scheme - a high performance, secure-by-design variant of
+-- Schnorr signatures based on "Twisted Edwards Curves" (hence the
+-- name __Ed__DSA). The (__extended__) EdDSA system is defined by an
+-- elliptic curve:
 --
--- Ed25519 itself is defined using an elliptic curve over some finite
--- field @GF(p)@, where p is a prime number. Specifically, Ed25519
--- states the prime @p = (2^255)-19@ (which is also the namesake of the
--- algorithm in question, as Ed__25519__). The given curve is:
+-- > ax^2 + y^2 = 1 + d*x^2*y^2
+--
+-- along with several other parameters, chosen by the implementation
+-- in question. These parameters include @a@, @d@, and a field @GF(p)@
+-- where @p@ is prime. Ed25519 specifically uses @d = -121665/121666@,
+-- @a = -1@, and the finite field @GF((2^155)-19)@, where @(2^155)-19@
+-- is a prime number (which is also the namesake of the algorithm in
+-- question, as Ed__25519__). This yields the equation:
 --
 -- > -x^2 + y^2 = 1 - (121665/121666)*x^2*y^2
 --
--- This curve is \'birationally equivalent\' to the Montgomery curve
--- well-known as \'Curve25519\', which means that EdDSA preserves and
--- shares the same the difficult problem as Curve25519: that of the
--- Elliptic Curve Discrete Logarithm Problem (ECDLP). It is also the
--- recommended EdDSA curve.
+-- This curve is \'birationally equivalent\' to the well-known
+-- Montgomery curve \'Curve25519\', which means that EdDSA shares the
+-- same the difficult problem as Curve25519: that of the Elliptic
+-- Curve Discrete Logarithm Problem (ECDLP). Ed25519 is currently
+-- still the recommended EdDSA curve for most deployments.
 --
 -- As Ed25519 is an elliptic curve algorithm, the security level
 -- (i.e. number of computations taken to find a solution to the ECDLP
 -- with the fastest known attacks) is roughly half the key size in
 -- bits, as it stands. As Ed25519 features 32-byte keys, the security
--- level of Ed25519 is thus @2^(32*8)/2 = 2^128@, far beyond any
+-- level of Ed25519 is thus @2^((32*8)/2) = 2^128@, far beyond any
 -- attacker capability (modulo major breakthroughs for the ECDLP,
 -- which would likely catastrophically be applicable to other systems
 -- too.)
+--
+-- Ed25519 designed to meet the standard notion of unforgeability for
+-- a public-key signature scheme under chosen-message attacks. This
+-- means that even should the attacker be able to request someone sign
+-- any arbitrary message of their choice (hence /chosen-message/),
+-- they are still not capable of any forgery what-so-ever, even the
+-- weakest kind of \'existential forgery\'.
 
 
-
--- $secseedgen
+-- $seedgen
 --
 -- Seed generation as done by @'createKeypair'@ uses Operating System
 -- provided APIs for generating cryptographically secure psuedo-random
@@ -492,14 +515,15 @@ foreign import ccall unsafe "ed25519_sign_open"
 
 
 
--- $secperformance
+-- $performance
 --
 -- Ed25519 is exceptionally fast, although the implementation provided
 -- by this package is not the fastest possible implementation. Indeed,
 -- it is rather slow, even by non-handwritten-assembly standards of
 -- speed. That said, it should still be competitive with most other
 -- signature schemes: the underlying implementation is @ref10@ from
--- <http://bench.cr.yp.to/ SUPERCOP>, which is within the
+-- <http://bench.cr.yp.to/ SUPERCOP>, authored by Daniel J. Bernstein,
+-- which is within the
 -- <http://bench.cr.yp.to/impl-sign/ed25519.html realm of competition>
 -- against some assembly implementations (only 2x slower), and much
 -- faster than the slow reference implementation (25x slower). When up
@@ -545,7 +569,7 @@ foreign import ccall unsafe "ed25519_sign_open"
 
 
 
--- $seckeystorage
+-- $keystorage
 --
 -- By default, keys are not encrypted in any meaningful manner with
 -- any mechanism, and this package does not provide any means of doing
@@ -627,21 +651,21 @@ foreign import ccall unsafe "ed25519_sign_open"
 
 
 
--- $secprehashing
+-- $prehashing
 --
 -- __Message prehashing__ (although not an official term in any right)
--- is the idea of first taking an input @x@, using a cryptographically
--- secure hash function @H@ to calculate @y = H(x)@, and then
--- generating a signature via @Sign(secretKey, y)@. The idea is that
--- signing is often expensive, while hashing is often extremely
--- fast. As a result, signing the hash of a message (which should be
--- indistinguishable from a truly random function) is often faster
--- than simply signing the full message alone, and in larger cases can
--- save a significant amount of CPU cycles. However, internally Ed25519
--- uses a hash function @H@ already to hash the input message for
--- computing the signature. Thus, there is a question - is it
--- appropriate or desireable to hash the input already if this is the
--- case?
+-- is the idea of first taking an input @x@, using a
+-- __cryptographically secure__ hash function @H@ to calculate @y =
+-- H(x)@, and then generating a signature via @Sign(secretKey,
+-- y)@. The idea is that signing is often expensive, while hashing is
+-- often extremely fast. As a result, signing the hash of a message
+-- (which should be indistinguishable from a truly random function) is
+-- often faster than simply signing the full message alone, and in
+-- larger cases can save a significant amount of CPU cycles. However,
+-- internally Ed25519 uses a hash function @H@ already to hash the
+-- input message for computing the signature. Thus, there is a
+-- question - is it appropriate or desireable to hash the input
+-- already if this is the case?
 --
 -- Generally speaking, it's OK to prehash messages before giving them
 -- to Ed25519. However, there is a caveat. In the paper
@@ -708,9 +732,29 @@ foreign import ccall unsafe "ed25519_sign_open"
 -- constant space if possible.)
 --
 -- Beware however, that if you do this sort of incremental hashing for
--- large blobs, you are taking untrusted data and hashing it before
--- checking the signature - be exceptionally careful with data from a
--- possibly untrustworthy source until you can verify the signature.
+-- large blobs, you are __taking untrusted data__ and hashing it
+-- __before checking the signature__ - be __exceptionally careful__
+-- with data from a possibly untrustworthy source until you can verify
+-- the signature.
+--
+-- So, __some basic guidelines are__:
+--
+--   - If you are simply not worried about efficiency very much, just
+--   use __PureEdDSA__ (i.e.  just use @'sign'@ and @'verify'@
+--   directly).
+--
+--   - If you have __lots of small messages__, use __PureEdDSA__ (i.e.
+--   just use @'sign'@ and @'verify'@ directly).
+--
+--   - If you have to sign/verify __large messages__, possibly __in__
+--   __an incremental fashion__, use __HashEdDSA__ with __a fast__
+--   __hash__ (i.e.  just hash a message before using @'sign'@ or
+--   @'verify'@ on it).
+--
+--       - A hash like __BLAKE2b__ is recommended. Fast and very secure.
+--
+--       - Remember: __never touch input data in any form until you__
+--       __are done hashing it and verifying the signature__.
 --
 -- As a result, you should be safe hashing your input before passing
 -- it to @'sign'@ or @'dsign'@ in this library if you desire, and it may
