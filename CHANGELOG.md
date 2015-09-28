@@ -1,3 +1,15 @@
+0.0.4.0
+-------
+
+  * `Crypto.Sign.Ed25519` is now marked `-XTrustworthy`.
+  * There is now a `Generic` instance for `Signature` on GHC 7.2 and above.
+  * **DEPRECATED**: `createKeypairFromSeed` due to unsafety.
+    - Use `createKeypairFromSeed_` instead, which will return a `Maybe`.
+  * **DEPRECATED**: `sign'` and `verify'` for bad naming
+    - Use `dsign` and `dverify` instead.
+  * Improve benchmarks.
+  * Huge overhaul to documentation, including design and implementation notes.
+
 0.0.3.0
 -------
 
