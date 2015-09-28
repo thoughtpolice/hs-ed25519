@@ -36,11 +36,12 @@
 module Crypto.Sign.Ed25519
        ( -- * Keypair creation
          -- $creatingkeys
-         PublicKey(..)         -- :: *
-       , SecretKey(..)         -- :: *
-       , createKeypair         -- :: IO (PublicKey, SecretKey)
-       , createKeypairFromSeed -- :: ByteString -> (PublicKey, SecretKey)
-       , toPublicKey           -- :: SecretKey -> PublicKey
+         PublicKey(..)          -- :: *
+       , SecretKey(..)          -- :: *
+       , createKeypair          -- :: IO (PublicKey, SecretKey)
+       , createKeypairFromSeed_ -- :: ByteString -> Maybe (PublicKey, SecretKey)
+       , createKeypairFromSeed  -- :: ByteString -> (PublicKey, SecretKey)
+       , toPublicKey            -- :: SecretKey -> PublicKey
 
          -- * Signing and verifying messages
          -- $signatures
@@ -84,7 +85,7 @@ import           Foreign.Storable
 
 import           System.IO.Unsafe         (unsafePerformIO)
 
-import           Control.Monad            (unless)
+import           Data.Maybe               (fromMaybe)
 
 import           Data.ByteString          as S
 import           Data.ByteString.Internal as SI
@@ -101,7 +102,7 @@ import           GHC.Generics             (Generic)
 -- $creatingkeys
 --
 -- Ed25519 signatures start off life by having a keypair created,
--- using @'createKeypair'@ or @'createKeypairFromSeed'@, which gives
+-- using @'createKeypair'@ or @'createKeypairFromSeed_'@, which gives
 -- you back a @'SecretKey'@ you can use for signing messages, and a
 -- @'PublicKey'@ your users can use to verify you in fact authored the
 -- messages.
@@ -148,14 +149,14 @@ deriving instance Generic SecretKey
 
 -- | Randomly generate a @'SecretKey'@ and @'PublicKey'@ for doing
 -- authenticated signing and verification. This essentically calls
--- @'createKeypairFromSeed'@ with a randomly generated 32-byte seed,
+-- @'createKeypairFromSeed_'@ with a randomly generated 32-byte seed,
 -- the source of which is operating-system dependent (see security
 -- notes below). However, internally it is implemented more
 -- efficiently (with less allocations and copies).
 --
 -- If you wish to use your own seed (for design purposes so you may
 -- recreate keys, due to high paranoia, or because you have your own
--- source of randomness), please use @'createKeypairFromSeed'@
+-- source of randomness), please use @'createKeypairFromSeed_'@
 -- instead.
 --
 -- @since 0.0.1.0
@@ -177,28 +178,48 @@ createKeypair = do
 -- given 32-byte seed, allowing you to recreate a keypair at any point
 -- in time, providing you have the seed available.
 --
--- Note that this will @'fail'@ if the given input is not 32 bytes in
--- length, so you must be precise with this input.
+-- If the input seed is not 32 bytes in length,
+-- @'createKeypairFromSeed_'@ returns @'Nothing'@. Otherwise, it
+-- always returns @'Just' (pk, sk)@ for the given seed.
+--
+-- __/NOTE/__: This function will replace @'createKeypairFromSeed'@ in
+-- the future.
+--
+-- @since 0.0.4.0
+createKeypairFromSeed_ :: ByteString                  -- ^ 32-byte seed
+                      -> Maybe (PublicKey, SecretKey) -- ^ Resulting keypair
+createKeypairFromSeed_ seed
+  | S.length seed /= cryptoSignSEEDBYTES = Nothing
+  | otherwise = unsafePerformIO $ do
+    pk <- SI.mallocByteString cryptoSignPUBLICKEYBYTES
+    sk <- SI.mallocByteString cryptoSignSECRETKEYBYTES
+
+    _ <- SU.unsafeUseAsCString seed $ \pseed -> do
+      _ <- withForeignPtr pk $ \ppk -> do
+        _ <- withForeignPtr sk $ \psk -> do
+          _ <- c_crypto_sign_seed_keypair ppk psk pseed
+          return ()
+        return ()
+      return ()
+
+    return $ Just (PublicKey $ SI.fromForeignPtr pk 0 cryptoSignPUBLICKEYBYTES,
+                   SecretKey $ SI.fromForeignPtr sk 0 cryptoSignSECRETKEYBYTES)
+
+-- | Generate a deterministic @'PublicKey'@ and @'SecretKey'@ from a
+-- given 32-byte seed, allowing you to recreate a keypair at any point
+-- in time, providing you have the seed available.
+--
+-- Note that this will @'error'@ if the given input is not 32 bytes in
+-- length, so you must be careful with this input.
 --
 -- @since 0.0.3.0
 createKeypairFromSeed :: ByteString             -- ^ 32-byte seed
                       -> (PublicKey, SecretKey) -- ^ Resulting keypair
-createKeypairFromSeed seed = unsafePerformIO $ do
-  unless (S.length seed == cryptoSignSEEDBYTES)
-    (fail "seed has incorrect length")
-  pk <- SI.mallocByteString cryptoSignPUBLICKEYBYTES
-  sk <- SI.mallocByteString cryptoSignSECRETKEYBYTES
-
-  _ <- SU.unsafeUseAsCString seed $ \pseed -> do
-    _ <- withForeignPtr pk $ \ppk -> do
-      _ <- withForeignPtr sk $ \psk -> do
-        _ <- c_crypto_sign_seed_keypair ppk psk pseed
-        return ()
-      return ()
-    return ()
-
-  return (PublicKey $ SI.fromForeignPtr pk 0 cryptoSignPUBLICKEYBYTES,
-          SecretKey $ SI.fromForeignPtr sk 0 cryptoSignSECRETKEYBYTES)
+createKeypairFromSeed seed
+  = fromMaybe (error "seed has incorrect length") (createKeypairFromSeed_ seed)
+{-# DEPRECATED createKeypairFromSeed "This function is unsafe as it can \
+@'fail'@ with an invalid input. This function will be replaced with \
+@'createKeypairWithSeed_'@ in a future release." #-}
 
 -- | Derive the @'PublicKey'@ for a given @'SecretKey'@. This is a
 -- convenience which allows (for example) using @'createKeypair'@ and
