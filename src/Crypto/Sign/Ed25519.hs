@@ -128,8 +128,8 @@ newtype PublicKey = PublicKey { unPublicKey :: ByteString
                               }
         deriving (Eq, Show, Ord)
 
--- | A @'SecretKey'@ created by @'createKeypair'@. Be sure to keep this
--- safe!
+-- | A @'SecretKey'@ created by @'createKeypair'@. __Be sure to keep this__
+-- __safe!__
 --
 -- @since 0.0.1.0
 newtype SecretKey = SecretKey { unSecretKey :: ByteString
@@ -465,7 +465,7 @@ foreign import ccall unsafe "ed25519_sign_open"
 -- Seed generation as done by @'createKeypair'@ uses Operating System
 -- provided APIs for generating cryptographically secure psuedo-random
 -- data to be used as an Ed25519 key seed. Your own deterministic keys
--- may be generated using @'createKeypairFromSeed'@, provided you have
+-- may be generated using @'createKeypairFromSeed_'@, provided you have
 -- your own cryptographically secure psuedo-random data from
 -- somewhere.
 --

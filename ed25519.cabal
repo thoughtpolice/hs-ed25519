@@ -11,8 +11,7 @@ author:              Austin Seipp
 maintainer:          Austin Seipp <aseipp@pobox.com>
 build-type:          Simple
 cabal-version:       >=1.10
-tested-with:         GHC == 6.12.3,
-                     GHC == 7.0.1, GHC == 7.0.2, GHC == 7.0.3, GHC == 7.0.4,
+tested-with:         GHC == 7.0.1, GHC == 7.0.2, GHC == 7.0.3, GHC == 7.0.4,
                      GHC == 7.2.1, GHC == 7.2.2, GHC == 7.4.1, GHC == 7.4.2,
                      GHC == 7.6.1, GHC == 7.6.2, GHC == 7.6.3,
                      GHC == 7.8.2, GHC == 7.8.3, GHC == 7.8.4,
