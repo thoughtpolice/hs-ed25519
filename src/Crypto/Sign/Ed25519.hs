@@ -26,7 +26,7 @@
 -- signature systems around, and is simple to get started with for
 -- building more complex protocols.)
 --
--- For more information on the underlying implementation and theory
+-- For more reading on the underlying implementation and theory
 -- (including how to get a copy of the software Ed25519 software),
 -- visit <http://ed25519.cr.yp.to>. In particular, the full algorithm
 -- is defined in the paper
