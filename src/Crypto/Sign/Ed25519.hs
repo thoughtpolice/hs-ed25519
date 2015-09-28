@@ -453,7 +453,7 @@ foreign import ccall unsafe "ed25519_sign_open"
 -- (i.e. number of computations taken to find a solution to the ECDLP
 -- with the fastest known attacks) is roughly half the key size in
 -- bits, as it stands. As Ed25519 features 32-byte keys, the security
--- level of Ed25519 is thus @2^(32*8) = 2^128@, far beyond any
+-- level of Ed25519 is thus @2^(32*8)/2 = 2^128@, far beyond any
 -- attacker capability (modulo major breakthroughs for the ECDLP,
 -- which would likely catastrophically be applicable to other systems
 -- too.)
