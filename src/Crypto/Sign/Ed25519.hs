@@ -28,7 +28,7 @@
 -- educational and should help adjust your expectations properly.)
 --
 -- For more reading on the underlying implementation and theory
--- (including how to get a copy of the software Ed25519 software),
+-- (including how to get a copy of the Ed25519 software),
 -- visit <http://ed25519.cr.yp.to>. There are two papers that discuss
 -- the design of EdDSA/Ed25519 in detail:
 --
