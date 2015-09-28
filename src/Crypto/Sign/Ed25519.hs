@@ -16,21 +16,22 @@
 -- Stability   : experimental
 -- Portability : portable
 --
--- This module provides bindings to the ed25519 public-key signature
--- system, including detached signatures. The underlying
--- implementation uses the @ref10@ implementation of ed25519 from
--- SUPERCOP, authored by Daniel J Bernstein, and it should be
--- relatively fast.
+-- This module provides bindings to the Ed25519 public-key signature
+-- system, including detached signatures. The documentation should be
+-- self explanatory with complete examples.
 --
--- Below you'll find API and security notes amongst the documentation,
--- which you may want to read carefully before
--- continuing. (Nonetheless, @ed25519@ is one of the easiest-to-use
+-- Below the basic documentation you'll find API, performance and
+-- security notes, which you may want to read carefully before
+-- continuing. (Nonetheless, @Ed25519@ is one of the easiest-to-use
 -- signature systems around, and is simple to get started with for
 -- building more complex protocols.)
 --
 -- For more information on the underlying implementation and theory
--- (including how to get a copy of the software ed25519 software),
--- visit <http://ed25519.cr.yp.to>.
+-- (including how to get a copy of the software Ed25519 software),
+-- visit <http://ed25519.cr.yp.to>. In particular, the full algorithm
+-- is defined in the paper
+-- <http://ed25519.cr.yp.to/ed25519-20110926.pdf "High-speed high-security signatures">
+-- by Bernstein, Duif, Lange, Schwabe, and Yang.
 --
 module Crypto.Sign.Ed25519
        ( -- * Keypair creation
@@ -52,8 +53,23 @@ module Crypto.Sign.Ed25519
        , sign'                -- :: SecretKey -> ByteString -> Signature
        , verify'              -- :: PublicKey -> ByteString -> Signature -> Bool
 
-         -- * Security notes
+         -- * Security, design and implementation notes
          -- $security
+
+         -- ** EdDSA background and properties
+         -- $secbackground
+
+         -- *** Generation of psuedo-random seeds
+         -- $secseedgen
+
+         -- ** Performance and implementation
+         -- $secperformance
+
+         -- ** Secure @'SecretKey'@ storage
+         -- $seckeystorage
+
+         -- ** Prehashing and large input messages
+         -- $secprehashing
        ) where
 import           Foreign.C.Types
 import           Foreign.ForeignPtr       (withForeignPtr)
@@ -79,13 +95,13 @@ import           GHC.Generics             (Generic)
 
 -- $creatingkeys
 --
--- ed25519 signatures start off life by having a keypair created,
+-- Ed25519 signatures start off life by having a keypair created,
 -- using @'createKeypair'@ or @'createKeypairFromSeed'@, which gives
 -- you back a @'SecretKey'@ you can use for signing messages, and a
 -- @'PublicKey'@ your users can use to verify you in fact authored the
 -- messages.
 --
--- ed25519 is a /deterministic signature system/, meaning that you may
+-- Ed25519 is a /deterministic signature system/, meaning that you may
 -- always recompute a @'PublicKey'@ and a @'SecretKey'@ from an
 -- initial, 32-byte input seed. Despite that, the default interface
 -- almost all clients will wish to use is simply @'createKeypair'@,
@@ -96,14 +112,28 @@ import           GHC.Generics             (Generic)
 -- | A @'PublicKey'@ created by @'createKeypair'@.
 --
 -- @since 0.0.1.0
-newtype PublicKey = PublicKey { unPublicKey :: ByteString }
+newtype PublicKey = PublicKey { unPublicKey :: ByteString
+                                -- ^ Unwrapper for getting the raw
+                                -- @'ByteString'@ in a
+                                -- @'PublicKey'@. In general you
+                                -- should not make any assumptions
+                                -- about the underlying blob; this is
+                                -- only provided for interoperability.
+                              }
         deriving (Eq, Show, Ord)
 
 -- | A @'SecretKey'@ created by @'createKeypair'@. Be sure to keep this
 -- safe!
 --
 -- @since 0.0.1.0
-newtype SecretKey = SecretKey { unSecretKey :: ByteString }
+newtype SecretKey = SecretKey { unSecretKey :: ByteString
+                                -- ^ Unwrapper for getting the raw
+                                -- @'ByteString'@ in a
+                                -- @'SecretKey'@. In general you
+                                -- should not make any assumptions
+                                -- about the underlying blob; this is
+                                -- only provided for interoperability.
+                              }
         deriving (Eq, Show, Ord)
 
 #if __GLASGOW_HASKELL__ >= 702
@@ -115,11 +145,13 @@ deriving instance Generic SecretKey
 -- authenticated signing and verification. This essentically calls
 -- @'createKeypairFromSeed'@ with a randomly generated 32-byte seed,
 -- the source of which is operating-system dependent (see security
--- notes below).
+-- notes below). However, internally it is implemented more
+-- efficiently (with less allocations and copies).
 --
 -- If you wish to use your own seed (for design purposes so you may
--- recreate keys, due to high paranoia, or having your own source of
--- randomness), please use @'createKeypairFromSeed'@ instead.
+-- recreate keys, due to high paranoia, or because you have your own
+-- source of randomness), please use @'createKeypairFromSeed'@
+-- instead.
 --
 -- @since 0.0.1.0
 createKeypair :: IO (PublicKey, SecretKey)
@@ -163,9 +195,10 @@ createKeypairFromSeed seed = unsafePerformIO $ do
   return (PublicKey $ SI.fromForeignPtr pk 0 cryptoSignPUBLICKEYBYTES,
           SecretKey $ SI.fromForeignPtr sk 0 cryptoSignSECRETKEYBYTES)
 
--- | Derive the @'PublicKey'@ for a given @'SecretKey'@ (allowing you
--- to use @'createKeypair'@ and only ever store the returned
--- @'SecretKey'@, for any future operations).
+-- | Derive the @'PublicKey'@ for a given @'SecretKey'@. This is a
+-- convenience which allows (for example) using @'createKeypair'@ and
+-- only ever storing the returned @'SecretKey'@ for any future
+-- operations.
 --
 -- @since 0.0.3.0
 toPublicKey :: SecretKey -- ^ Any valid @'SecretKey'@
@@ -178,12 +211,12 @@ toPublicKey = PublicKey . S.drop prefixBytes  . unSecretKey
 
 -- $signatures
 --
--- By default, the ed25519 interface computes a /signed message/ given
+-- By default, the Ed25519 interface computes a /signed message/ given
 -- a @'SecretKey'@ and an input message. A /signed message/ consists
--- of an ed25519 signature (of unspecified format), followed by the
+-- of an Ed25519 signature (of unspecified format), followed by the
 -- input message.  This means that given an input message of @M@
 -- bytes, you get back a message of @M+N@ bytes where @N@ is a
--- constant (the size of the ed25519 signature blob).
+-- constant (the size of the Ed25519 signature blob).
 --
 -- The default interface in this package reflects that. As a result,
 -- any time you use @'sign'@ or @'verify'@ you will be given back the
@@ -240,20 +273,27 @@ verify (PublicKey pk) xs =
 -- $detachedsigs
 --
 -- This package also provides an alternative interface for /detached/
--- /signatures/, which is more in-line with what you would
+-- /signatures/, which is more in-line with what you might
 -- traditionally expect from a signing API. In this mode, the
 -- @'sign''@ and @'verify''@ interfaces simply return a constant-sized
--- blob, representing the ed25519 signature of the input message.
+-- blob, representing the Ed25519 signature of the input message.
 --
 -- This allows users to independently download, verify or attach
--- signatures to messages in any way they see fit, for example, by
+-- signatures to messages in any way they see fit - for example, by
 -- providing a tarball file to download, with a corresponding @.sig@
--- file containing the ed25519 signature from the author.
+-- file containing the Ed25519 signature from the author.
 
 -- | A @'Signature'@ which is detached from the message it signed.
 --
 -- @since 0.0.1.0
-newtype Signature = Signature { unSignature :: ByteString }
+newtype Signature = Signature { unSignature :: ByteString
+                                -- ^ Unwrapper for getting the raw
+                                -- @'ByteString'@ in a
+                                -- @'Signature'@. In general you
+                                -- should not make any assumptions
+                                -- about the underlying blob; this is
+                                -- only provided for interoperability.
+                              }
         deriving (Eq, Show, Ord)
 
 #if __GLASGOW_HASKELL__ >= 702
@@ -321,6 +361,283 @@ foreign import ccall unsafe "ed25519_sign_open"
   c_crypto_sign_open :: Ptr Word8 -> Ptr CULLong ->
                         Ptr CChar -> CULLong -> Ptr CChar -> IO CInt
 
+--------------------------------------------------------------------------------
+-- Documentation and notes
+
 -- $security
 --
--- Lorem ipsum...
+-- Included below are some notes on the security aspects of the
+-- Ed25519 signature system, its implementation and design, this
+-- package, and suggestions for how you might use it properly.
+
+
+
+-- $secbackground
+--
+-- Ed25519 is a specific instantiation of the __EdDSA__ digital signature
+-- scheme - a high performance, secure-by-design variant of Schnorr
+-- signatures based on "Twisted Edwards Curves" (hence the name
+-- __Ed__DSA).
+--
+-- Ed25519 itself is defined using an elliptic curve over some finite
+-- field @GF(p)@, where p is a prime number. Specifically, Ed25519
+-- states the prime @p = (2^255)-19@ (which is also the namesake of the
+-- algorithm in question, as Ed__25519__). The given curve is:
+--
+-- > -x^2 + y^2 = 1 - (121665/121666)*x^2*y^2
+--
+-- This curve is \'birationally equivalent\' to the Montgomery curve
+-- well-known as \'Curve25519\', which means that EdDSA preserves and
+-- shares the same the difficult problem as Curve25519: that of the
+-- Elliptic Curve Discrete Logarithm Problem (ECDLP). It is also the
+-- recommended EdDSA curve.
+--
+-- As Ed25519 is an elliptic curve algorithm, the security level
+-- (i.e. number of computations taken to find a solution to the ECDLP
+-- with the fastest known attacks) is roughly half the key size in
+-- bits, as it stands. As Ed25519 features 32-byte keys, the security
+-- level of Ed25519 is thus @2^(32*8) = 2^128@, far beyond any
+-- attacker capability (modulo major breakthroughs for the ECDLP,
+-- which would likely catastrophically be applicable to other systems
+-- too.)
+
+
+
+-- $secseedgen
+--
+-- Seed generation as done by @'createKeypair'@ uses Operating System
+-- provided APIs for generating cryptographically secure psuedo-random
+-- data to be used as an Ed25519 key seed. Your own deterministic keys
+-- may be generated using @'createKeypairFromSeed'@, provided you have
+-- your own cryptographically secure psuedo-random data from
+-- somewhere.
+--
+-- On __Linux__, __OS X__ and __other Unix__ machines, the
+-- @\/dev\/urandom@ device is consulted internally in order to generate
+-- random data. In the current implementation, a global file
+-- descriptor is used through the lifetime of the program to
+-- periodically get psuedo-random data.
+--
+-- On __Windows__, the @CryptGenRandom@ API is used internally. This
+-- does not require file handles of any kind, and should work on all
+-- versions of Windows. (Windows may instead use @RtlGenRandom@ in the
+-- future for even less overhead.)
+--
+-- In the future, there are plans for this package to internally take
+-- advantage of better APIs when they are available; for example, on
+-- Linux 3.17 and above, @getrandom(2)@ provides psuedo-random data
+-- directly through the internal pool provided by @\/dev\/urandom@,
+-- without a file descriptor. Similarly, OpenBSD provides the
+-- @arc4random(3)@ family of functions, which internally uses a data
+-- generator based on ChaCha20. These should offer somewhat better
+-- efficiency, and also avoid file-descriptor exhaustion attacks which
+-- could lead to denial of service in some scenarios.
+
+
+
+-- $secperformance
+--
+-- Ed25519 is exceptionally fast, although the implementation provided
+-- by this package is not the fastest possible implementation. Indeed,
+-- it is rather slow, even by non-handwritten-assembly standards of
+-- speed. That said, it should still be competitive with most other
+-- signature schemes: the underlying implementation is @ref10@ from
+-- <http://bench.cr.yp.to/ SUPERCOP>, which is within the
+-- <http://bench.cr.yp.to/impl-sign/ed25519.html realm of competition>
+-- against some assembly implementations (only 2x slower), and much
+-- faster than the slow reference implementation (25x slower). When up
+-- <http://bench.cr.yp.to/web-impl/amd64-skylake-crypto_sign.html against RSA>
+-- signatures (ronald3072) on a modern Intel machine, it is still __15x__
+-- faster at signing messages /at the same 128-bit security level/.
+--
+-- On the author's Sandy Bridge i5-2520M 2.50GHz CPU, the benchmarking
+-- results included with the code report the following numbers for the
+-- Haskell interface:
+--
+-- @
+-- TODO FIXME
+-- @
+--
+-- In the future, this package will hopefully provide an opt-in (or
+-- possibly default) implementation of
+-- <https://github.com/floodyberry/ed25519-donna ed25519-donna>, which
+-- should dramatically increase speed at no cost for many/all
+-- platforms.
+
+
+
+-- $seckeystorage
+--
+-- By default, keys are not encrypted in any meaningful manner with
+-- any mechanism, and this package does not provide any means of doing
+-- so. As a result, your secret keys are only as secure as the
+-- computing environment housing them - a server alone out on the
+-- hostile internet, or a USB stick that's susceptable to theft.
+--
+-- If you wish to add some security to your keys, a very simple and
+-- effective way is __to add a password to your @'SecretKey'@ with a__
+-- __KDF and a hash__. How does this work?
+--
+--   * First, hash the secret key you have generated. Use this as a
+--   __checksum__ of the original key. Truncating this hash to save
+--   space is acceptable; see below for more details and boring
+--   hemming and hawing.
+--
+--   * Given an input password, use a KDF to stretch it to the length
+--   of a @'SecretKey'@.
+--
+--   * XOR the @'SecretKey'@ bytewise, directly with the output of
+--   your chosen KDF.
+--
+--   * Attach the checksum you generated to the resulting encrypted
+--   key, and store it as you like.
+--
+-- In this mode, your key is XOR'd with the psuedo-random result of a
+-- KDF, which will stretch simple passwords like "I am the robot" into
+-- a suitable amount of psuedo-random data for a given secret key to
+-- be encrypted with. Decryption is simply the act of taking the
+-- password, generating the psuedo-random stream again, XORing the key
+-- bytewise, and validating the checksum. In this sense, you are
+-- simply using a KDF as a short stream cipher.
+--
+-- __Recommendation__: Encrypt keys by stretching a password with
+-- __scrypt__ (or __yescrypt__), using better-than-default parameters.
+-- (These being @N = 2^14@, @r = 8@, @p = 1@; the default results in
+-- 16mb of memory per invocation, and this is the recommended default
+-- for 'interactive systems'; signing keys may be loaded on-startup
+-- for some things however, so it may be profitable to increase
+-- security as well as memory use in these cases. For example, at @N =
+-- 2^18@, @r = 10@ and @p = 2@, you'll get 320mb of memory per use,
+-- which may be acceptable for dramatic security increases. See
+-- elsewhere for exact memory use.) Checksums may be computed with an
+-- exceptionally fast hash such as __BLAKE2b__.
+--
+-- __Bonus points__: Print that resulting checksum + key out on a
+-- piece of paper (~100 bytes, tops), and put /that/ somewhere safe.
+--
+-- __Q__: What is the hash needed for? __A__: A simple file integrity
+-- check. Rather than invoke complicated methods of verifying if an
+-- ed25519 keypair is valid (as it is simply an opaque binary blob,
+-- for all intents and purposes), especially after 'streaming
+-- decryption', it's far easier to simply compute and compare against
+-- a checksum of the original to determine if decryption with your
+-- password worked.
+--
+-- __Q__: Wait, why is it OK to truncate the hash here? That sounds
+-- scary. Won't that open up collisions or something like that if they
+-- stole my encrypted key?  __A__: No. The hash in this case is only
+-- used as a checksum to see if the password is legitimate after
+-- running the KDF and XORing with the result. Think about how the
+-- \'challenge\' itself is chosen: if you know @H(m)@, do you want to
+-- find @m@ itself, or simply find @m'@ where @H(m') = H(m)@?  To
+-- forge a signature, you want the original key, @m@. Suppose given an
+-- input of 256-bits, we hashed it and truncated to one bit. Finding
+-- collisions would be easy: you would only need to try a few times to
+-- find a collision or preimage. But you probably found @m'@ such that
+-- @H(m') = H(m)@ - you didn't necessarily find @m@ itself. In this
+-- sense, finding collisions or preimages of the hash is not useful to
+-- the attacker, because you must find the unique @m@.
+--
+-- __Q__: Okay, why use hashes at all? Why not CRC32? __A__: You could
+-- do that, it wouldn't change much. You can really use any kind of
+-- error detecting code you want. The thing is, some hashes such as
+-- __BLAKE2__ are very fast in things like software (not every CPU has
+-- CRC instructions, not all software uses CRC instructions), and
+-- you're likely to already have a fast, modern hash function sitting
+-- around anyway if you're signing stuff with Ed25519. Why not use it?
+
+
+
+-- $secprehashing
+--
+-- __Message prehashing__ (although not an official term in any right)
+-- is the idea of first taking an input @x@, using a cryptographically
+-- secure hash function @H@ to calculate @y = H(x)@, and then
+-- generating a signature via @Sign(secretKey, y)@. The idea is that
+-- signing is often expensive, while hashing is often extremely
+-- fast. As a result, signing the hash of a message (which should be
+-- indistinguishable from a truly random function) is often faster
+-- than simply signing the full message alone, and in larger cases can
+-- save a significant amount of CPU cycles. However, internally Ed25519
+-- uses a hash function @H@ already to hash the input message for
+-- computing the signature. Thus, there is a question - is it
+-- appropriate or desireable to hash the input already if this is the
+-- case?
+--
+-- Generally speaking, it's OK to prehash messages before giving them
+-- to Ed25519. However, there is a caveat. In the paper
+-- <http://ed25519.cr.yp.to/eddsa-20150704.pdf "EdDSA for more curves">,
+-- the authors of the original EdDSA enhance the specification by
+-- extending it with a message prehash function, @H'@, along with an
+-- internal hash @H@. Here, the prehash @H'@ is simply applied to the
+-- original message first before anything else. The original EdDSA
+-- specification (and the implementation in /this package/) was a
+-- trivial case of this enhancement: it was implicit that @H'@ is
+-- simply the identity function. We call the case where @H'@ is the
+-- identity function __PureEdDSA__, while the case where @H'@ is a
+-- cryptographic hash function is known as __HashEdDSA__. (Thus, the
+-- interfaces @'sign'@ and @'sign''@ implement PureEdDSA - while they can
+-- be converted to HashEdDSA by simply hashing the @'ByteString'@
+-- first with some other function.)
+--
+-- However, the authors note that HashEdDSA suffers from a weakness
+-- that PureEdDSA does not - PureEdDSA is resiliant to collision
+-- attacks in the underlying hash function @H@, while HashEdDSA is
+-- vulnerable to collisions in @H'@. This is an important
+-- distinction. Assume that the attacker finds a collision such that
+-- @H'(x) = H'(y)@, and then gets convinces a signer to HashEdDSA-sign
+-- @x@ - the attacker may then forge this signature and use it as the
+-- same signature as for the message @y@. For a hash function of
+-- @N@-bits of output, a collision attack takes roughly @2^(N/2)@
+-- operations.
+--
+-- Ed25519 internally sets @H = SHA-512@ anyway, which has no known
+-- collision attacks or weaknesses in any meaningful sense. It is
+-- however slower compared to other, more modern hash functions, and
+-- is used on the input message in its entirety (and there are no
+-- plans to switch the internal implementation of this package, or the
+-- standard Ed25519 away from @H = SHA-512@).
+--
+-- But note: /all other hash-then-sign constructions suffer from/
+-- /this/, in the sense they are all vulnerable to collision attacks
+-- in @H'@, should you prehash the message. In fact, PureEdDSA is
+-- unique (as far as I am aware) in that it is immune to collision
+-- attacks in @H@ - should a collision be found, it would not suffer
+-- from these forgeries. By this view, it's arguable that /depending/
+-- on the HashEdDSA construction (for efficiency or size purposes)
+-- when using EdDSA is somewhat less robust, even if SHA-512 or
+-- whatever is not very fast. Despite that, just about any /modern/
+-- /hash/ you pick is going to be collision resistant to a fine degree
+-- (say, 256 bits of output, therefore collisions 'at best' happen in
+-- @2^128@ operations), so in practice this robustness issue may not
+-- be that big of a deal.
+--
+-- However, the more pertinent issue is that due to the current design
+-- of the API which requires the entire blob to sign up front, using
+-- the HashEdDSA construction is often much more convenient, faster
+-- and sometimes /necessary/ too. For example, when signing very large
+-- messages (such as creating a very large @tar.gz@ file which you
+-- wish to sign after creation), it is often convenient and possible
+-- to use \'incremental\' hashing APIs to incrementally consume data
+-- blocks from the input in a constant amount of memory. At the end of
+-- consumption, you can \'finalize\' the data blocks and get back a
+-- final N-bit hash, and sign this hash all in a constant amount of
+-- memory. With the current API, using PureDSA would require you
+-- loading the entire file up front to either sign, or verify it. This
+-- is especially unoptimal for possibly smaller, low-memory systems
+-- (where decompression, hashing or verification are all best done in
+-- constant space if possible.)
+--
+-- Beware however, that if you do this sort of incremental hashing for
+-- large blobs, you are taking untrusted data and hashing it before
+-- checking the signature - be exceptionally careful with data from a
+-- possibly untrustworthy source until you can verify the signature.
+--
+-- As a result, you should be safe hashing your input before passing
+-- it to @sign@ or @sign'@ in this library if you desire, and it may
+-- save you CPU cycles for large inputs. It should be no different
+-- than the typical /hash-then-sign/ construction you see elsewhere,
+-- with the same downfalls. Should you do this, an extremely
+-- fast-yet-secure hash such as __BLAKE2b__ is recommended, which is
+-- even faster than MD5 or SHA-1 (and __do not ever use MD5 or__
+-- __SHA-1__, on that note - they suffer from collision attacks).

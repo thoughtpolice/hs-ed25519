@@ -2,7 +2,7 @@ name:                ed25519
 version:             0.0.3.0
 category:            Cryptography
 license:             MIT
-synopsis:            ed25519 cryptographic signatures
+synopsis:            Ed25519 cryptographic signatures
 homepage:            http://thoughtpolice.github.com/hs-ed25519
 bug-reports:         http://github.com/thoughtpolice/hs-ed25519/issues
 license-file:        LICENSE.txt
@@ -19,15 +19,10 @@ tested-with:         GHC == 6.12.3,
                      GHC == 7.10.1, GHC == 7.10.2
 
 description:
-  This package provides a simple, portable implementation of the
-  ed25519 public-key signature system. It also includes support for
-  detached signatures.
-  .
-  The underlying implementation uses the @ref10@ implementation of
-  ed25519 from SUPERCOP, and should be relatively fast.
-  .
-  For more information (including how to get a copy of the software)
-  visit <http://ed25519.cr.yp.to>.
+  This package provides a simple, fast, self-contained copy of the
+  Ed25519 public-key signature system with a clean interface. It also
+  includes support for detached signatures, and thorough documentation
+  on the design and implementation, including usage guidelines.
 
 extra-source-files:
   .travis.yml
