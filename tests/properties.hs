@@ -62,7 +62,7 @@ signLength2 xs
 
 main :: IO ()
 main = do
-  args <- fmap (drop 1) getArgs
+  args <- getArgs
   let n = if null args then 100 else read (head args) :: Int
   (results, passed) <- runTests n
   printf "Passed %d tests!\n" (sum passed)
@@ -82,7 +82,7 @@ tests ntests =
   where
     wrap :: Testable prop => prop -> IO (Bool, Int)
     wrap prop = do
-      r <- quickCheckWithResult stdArgs{maxSize=ntests} prop
+      r <- quickCheckWithResult stdArgs{maxSuccess=ntests} prop
       case r of
         Success n _ _           -> return (True, n)
         GaveUp  n _ _           -> return (True, n)
