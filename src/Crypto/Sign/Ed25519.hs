@@ -229,9 +229,7 @@ createKeypairFromSeed :: ByteString             -- ^ 32-byte seed
                       -> (PublicKey, SecretKey) -- ^ Resulting keypair
 createKeypairFromSeed seed
   = fromMaybe (error "seed has incorrect length") (createKeypairFromSeed_ seed)
-{-# DEPRECATED createKeypairFromSeed "This function is unsafe as it can \
-@'fail'@ with an invalid input. This function will be replaced with \
-@'createKeypairWithSeed_'@ in a future release." #-}
+{-# DEPRECATED createKeypairFromSeed "This function is unsafe as it can @'fail'@ with an invalid input. Use @'createKeypairWithSeed_'@ instead." #-}
 
 -- | Derive the @'PublicKey'@ for a given @'SecretKey'@. This is a
 -- convenience which allows (for example) using @'createKeypair'@ and
@@ -380,9 +378,7 @@ sign' :: SecretKey
       -> Signature
       -- ^ Message @'Signature'@, without the message
 sign' sk xs = dsign sk xs
-{-# DEPRECATED sign' "@'sign''@ will be removed in a future release; \
-use @'dsign'@ instead." #-}
-
+{-# DEPRECATED sign' "@'sign''@ will be removed in a future release; use @'dsign'@ instead." #-}
 
 -- | Verify a message with a detached @'Signature'@ against a given
 -- @'PublicKey'@. Simply an alias for @'dverify'@.
@@ -397,8 +393,7 @@ verify' :: PublicKey
         -> Bool
         -- ^ Verification result
 verify' pk xs sig = dverify pk xs sig
-{-# DEPRECATED verify' "@'verify''@ will be removed in a future release; \
-use @'dverify'@ instead." #-}
+{-# DEPRECATED verify' "@'verify''@ will be removed in a future release; use @'dverify'@ instead." #-}
 
 --------------------------------------------------------------------------------
 -- FFI binding
