@@ -45,7 +45,10 @@
 --   EdDSA systems any further.)
 --
 module Crypto.Sign.Ed25519
-       ( -- * Keypair creation
+       ( -- * A crash course introduction
+         -- $intro
+
+         -- * Keypair creation
          -- $creatingkeys
          PublicKey(..)          -- :: *
        , SecretKey(..)          -- :: *
@@ -107,6 +110,14 @@ import           Data.Word
 #if __GLASGOW_HASKELL__ >= 702
 import           GHC.Generics             (Generic)
 #endif
+
+-- Doctest setup with some examples
+
+-- $setup
+-- >>> :set -XOverloadedStrings
+-- >>> import Data.ByteString.Char8
+-- >>> let hash        x = x
+-- >>> let readBigFile x = return x
 
 --------------------------------------------------------------------------------
 -- Key creation
@@ -428,6 +439,53 @@ foreign import ccall unsafe "ed25519_sign_open"
 --------------------------------------------------------------------------------
 -- Documentation and notes
 
+-- $intro
+--
+-- The simplest use of this library is one where you probably need to
+-- sign short messages, so they can be verified independently. That's
+-- easily done by first creating a keypair with @'createKeypair'@, and
+-- using @'sign'@ to create a signed message. Then, you can distribute
+-- your public key and the signed message, and any recipient can
+-- verify that message:
+--
+-- >>> (pk, sk) <- createKeypair
+-- >>> let msg = sign sk "Hello world"
+-- >>> verify pk msg
+-- True
+--
+-- This interface is fine if your messages are small and simple binary
+-- blobs you want to verify in an opaque manner, but internally it
+-- creates a copy of the input message. Often, you'll want the
+-- signature independently of the message, and that can be done with
+-- @'dsign'@ and @'dverify'@. Naturally, verification fails if the
+-- message is incorrect:
+--
+-- >>> (pk, sk) <- createKeypair
+-- >>> let msg = "Hello world" :: ByteString
+-- >>> let sig = dsign sk msg
+-- >>> dverify pk msg sig
+-- True
+-- >>> dverify pk "Hello world" sig
+-- True
+-- >>> dverify pk "Goodbye world" sig
+-- False
+--
+-- Finally, it's worth keeping in mind this package doesn't expose any
+-- kind of incremental interface, and signing/verification can be
+-- expensive. So, if you're dealing with __large inputs__, you can
+-- hash the input with a robust, fast cryptographic hash, and then
+-- sign that (for example, the @hash@ function below could be
+-- __SHA-512__ or __BLAKE2b__):
+--
+-- >>> (pk, sk) <- createKeypair
+-- >>> msg <- readBigFile "blob.tar.gz" :: IO ByteString
+-- >>> let sig = dsign sk (hash msg)
+-- >>> dverify pk (hash msg) sig
+-- True
+--
+-- See the notes at the bottom of this module for more on message
+-- prehashing (as it acts slightly differently in an EdDSA system).
+
 -- $security
 --
 -- Included below are some notes on the security aspects of the
@@ -468,7 +526,7 @@ foreign import ccall unsafe "ed25519_sign_open"
 -- level of Ed25519 is thus @2^((32*8)/2) = 2^128@, far beyond any
 -- attacker capability (modulo major breakthroughs for the ECDLP,
 -- which would likely catastrophically be applicable to other systems
--- too.)
+-- too).
 --
 -- Ed25519 designed to meet the standard notion of unforgeability for
 -- a public-key signature scheme under chosen-message attacks. This
@@ -724,7 +782,7 @@ foreign import ccall unsafe "ed25519_sign_open"
 -- loading the entire file up front to either sign, or verify it. This
 -- is especially unoptimal for possibly smaller, low-memory systems
 -- (where decompression, hashing or verification are all best done in
--- constant space if possible.)
+-- constant space if possible).
 --
 -- Beware however, that if you do this sort of incremental hashing for
 -- large blobs, you are __taking untrusted data__ and hashing it
