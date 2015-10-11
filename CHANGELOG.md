@@ -1,3 +1,11 @@
+0.0.5.0
+-------
+
+  * Added doctests and crash course introduction.
+  * Fixed some bugs in the test harnesses.
+  * Fixed some `hlint` gripes.
+  * Minor touchups elsewhere.
+
 0.0.4.0
 -------
 
