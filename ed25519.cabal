@@ -136,7 +136,7 @@ test-suite doctests
 -------------------------------------------------------------------------------
 -- Build pt 3: benchmarks
 
-benchmark bench1
+benchmark bench
   type:               exitcode-stdio-1.0
   build-depends:
       base        >= 4   && < 5,
@@ -147,4 +147,4 @@ benchmark bench1
 
   default-language:   Haskell2010
   hs-source-dirs:     benchmarks
-  main-is:            bench1.hs
+  main-is:            bench.hs
