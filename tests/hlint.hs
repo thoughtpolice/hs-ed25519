@@ -1,10 +1,11 @@
-module Main where
-
-import Data.Monoid
-import Control.Monad
-import Language.Haskell.HLint
-import System.Environment
-import System.Exit
+module Main
+       ( main -- :: IO ()
+       ) where
+import           Control.Monad
+import           Data.Monoid
+import           Language.Haskell.HLint
+import           System.Environment
+import           System.Exit
 
 main :: IO ()
 main = do

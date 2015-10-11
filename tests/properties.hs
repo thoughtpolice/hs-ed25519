@@ -1,7 +1,7 @@
 {-# OPTIONS_GHC -fno-warn-orphans #-}
 {-# LANGUAGE CPP #-}
 module Main
-       ( main  -- :: IO ()
+       ( main -- :: IO ()
        ) where
 import           Control.Monad
 import           Data.ByteString          (ByteString)
