@@ -41,9 +41,8 @@
 --   be used with more curves (such as Ed41417, or Ed488), as well as
 --   defining the support for __message prehashing__. The original
 --   EdDSA is easily derived from the extended version through a few
---   parameter defaults. (This package will not consider non-Ed25519
+--   parameter defaults. (This package won't consider non-Ed25519
 --   EdDSA systems any further.)
---
 --
 module Crypto.Sign.Ed25519
        ( -- * Keypair creation
@@ -67,7 +66,8 @@ module Crypto.Sign.Ed25519
        , dverify              -- :: PublicKey -> ByteString -> Signature -> Bool
          -- ** Deprecated interface
          -- | The below interface is deprecated but functionally
-         -- equivalent to the above; it simply has \"worse\" naming.
+         -- equivalent to the above; it simply has \"worse\" naming and will
+         -- eventually be removed.
        , sign'                -- :: SecretKey -> ByteString -> Signature
        , verify'              -- :: PublicKey -> ByteString -> Signature -> Bool
 
