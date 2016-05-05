@@ -252,7 +252,7 @@ createKeypairFromSeed :: ByteString             -- ^ 32-byte seed
                       -> (PublicKey, SecretKey) -- ^ Resulting keypair
 createKeypairFromSeed seed
   = fromMaybe (error "seed has incorrect length") (createKeypairFromSeed_ seed)
-{-# DEPRECATED createKeypairFromSeed "This function is unsafe as it can @'fail'@ with an invalid input, and will be removed in a future version. Use @'createKeypairWithSeed_'@ instead." #-}
+{-# DEPRECATED createKeypairFromSeed "This function is unsafe as it can @'fail'@ with an invalid input, and will be removed in a future version. Use @'createKeypairFromSeed_'@ instead." #-}
 
 -- | Derive the @'PublicKey'@ for a given @'SecretKey'@. This is a
 -- convenience which allows (for example) using @'createKeypair'@ and
