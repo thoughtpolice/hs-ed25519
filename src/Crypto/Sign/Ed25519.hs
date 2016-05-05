@@ -56,6 +56,11 @@ module Crypto.Sign.Ed25519
        , createKeypairFromSeed_ -- :: ByteString -> Maybe (PublicKey, SecretKey)
        , createKeypairFromSeed  -- :: ByteString -> (PublicKey, SecretKey)
        , toPublicKey            -- :: SecretKey -> PublicKey
+         -- ** Importing and exporting keys
+       , makePublicKey          -- :: ByteString -> Maybe PublicKey
+       , openPublicKey          -- :: PublicKey  -> ByteString
+       , makeSecretKey          -- :: ByteString -> Maybe SecretKey
+       , openSecretKey          -- :: SecretKey  -> ByteString
 
          -- * Signing and verifying messages
          -- $signatures
@@ -151,6 +156,8 @@ newtype PublicKey = PublicKey { unPublicKey :: ByteString
                               }
         deriving (Eq, Show, Ord)
 
+{-# DEPRECATED unPublicKey "This accessor is deprecated, and will be removed in a future version. Use @'openPublicKey'@ instead." #-}
+
 -- | A @'SecretKey'@ created by @'createKeypair'@. __Be sure to keep this__
 -- __safe!__
 --
@@ -165,10 +172,15 @@ newtype SecretKey = SecretKey { unSecretKey :: ByteString
                               }
         deriving (Eq, Show, Ord)
 
+{-# DEPRECATED unSecretKey "This accessor is deprecated, and will be removed in a future version. Use @'openSecretKey'@ instead." #-}
+
 #if __GLASGOW_HASKELL__ >= 702
 deriving instance Generic PublicKey
 deriving instance Generic SecretKey
 #endif
+
+--------------------------------------------------------------------------------
+-- Keypair creation
 
 -- | Randomly generate a @'SecretKey'@ and @'PublicKey'@ for doing
 -- authenticated signing and verification. This essentically calls
@@ -240,7 +252,7 @@ createKeypairFromSeed :: ByteString             -- ^ 32-byte seed
                       -> (PublicKey, SecretKey) -- ^ Resulting keypair
 createKeypairFromSeed seed
   = fromMaybe (error "seed has incorrect length") (createKeypairFromSeed_ seed)
-{-# DEPRECATED createKeypairFromSeed "This function is unsafe as it can @'fail'@ with an invalid input. Use @'createKeypairWithSeed_'@ instead." #-}
+{-# DEPRECATED createKeypairFromSeed "This function is unsafe as it can @'fail'@ with an invalid input, and will be removed in a future version. Use @'createKeypairWithSeed_'@ instead." #-}
 
 -- | Derive the @'PublicKey'@ for a given @'SecretKey'@. This is a
 -- convenience which allows (for example) using @'createKeypair'@ and
@@ -252,6 +264,45 @@ toPublicKey :: SecretKey -- ^ Any valid @'SecretKey'@
             -> PublicKey -- ^ Corresponding @'PublicKey'@
 toPublicKey = PublicKey . S.drop prefixBytes  . unSecretKey
   where prefixBytes = cryptoSignSECRETKEYBYTES - cryptoSignPUBLICKEYBYTES
+
+--------------------------------------------------------------------------------
+-- Key export/import
+
+-- | Construct a @'PublicKey'@ out of an ordinary @'ByteString'@. The
+-- input @'ByteString'@ must be exactly 32 bytes long, or this
+-- function will fail. No further checks are performed on the input.
+--
+-- @since 0.0.6.0
+makePublicKey :: ByteString -> Maybe PublicKey
+makePublicKey xs
+  | S.length xs /= 32 = Nothing
+  | otherwise         = Just (PublicKey xs)
+
+-- | Return a 32-byte long @'ByteString'@ representing a
+-- @'PublicKey'@. This @'ByteString'@ is suitable for transmission and
+-- usage with other Ed25519 implementations.
+--
+-- @since 0.0.6.0
+openPublicKey :: PublicKey -> ByteString
+openPublicKey (PublicKey xs) = xs
+
+-- | Construct a @'SecretKey'@ out of an ordinary @'ByteString'@. The
+-- input @'ByteString'@ must be exactly 32 bytes long, or this
+-- function will fail. No further checks are performed on the input.
+--
+-- @since 0.0.6.0
+makeSecretKey :: ByteString -> Maybe SecretKey
+makeSecretKey xs
+  | S.length xs /= 32 = Nothing
+  | otherwise         = Just (SecretKey xs)
+
+-- | Return a 32-byte long @'ByteString'@ representing a
+-- @'SecretKey'@. This @'ByteString'@ is suitable for transmission and
+-- usage with other Ed25519 implementations.
+--
+-- @since 0.0.6.0
+openSecretKey :: SecretKey -> ByteString
+openSecretKey (SecretKey xs) = xs
 
 --------------------------------------------------------------------------------
 -- Default, non-detached API
@@ -377,6 +428,9 @@ dverify :: PublicKey
         -- ^ Verification result
 dverify pk xs (Signature sig) = verify pk (sig `S.append` xs)
 {-# INLINE dverify #-}
+
+--------------------------------------------------------------------------------
+-- Deprecated, old, badly named detached API.
 
 -- | Sign a message with a particular @'SecretKey'@, only returning the
 -- @'Signature'@ without the message. Simply an alias for @'dsign'@.
