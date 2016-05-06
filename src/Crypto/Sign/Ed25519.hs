@@ -22,13 +22,13 @@
 --
 -- Below the basic documentation you'll find API, performance and
 -- security notes, which you may want to read carefully before
--- continuing. (Nonetheless, @Ed25519@ is one of the easiest-to-use
+-- continuing. (Nonetheless, Ed25519 is one of the easiest-to-use
 -- signature systems around, and is simple to get started with for
 -- building more complex protocols. But the below details are highly
 -- educational and should help adjust your expectations properly.)
 --
 -- For more reading on the underlying implementation and theory
--- (including how to get a copy of the Ed25519 software),
+-- (including how to get a copy of the original Ed25519 software),
 -- visit <http://ed25519.cr.yp.to>. There are two papers that discuss
 -- the design of EdDSA/Ed25519 in detail:
 --
@@ -41,8 +41,11 @@
 --   be used with more curves (such as Ed41417, or Ed488), as well as
 --   defining the support for __message prehashing__. The original
 --   EdDSA is easily derived from the extended version through a few
---   parameter defaults. (This package won't consider non-Ed25519
---   EdDSA systems any further.)
+--   parameter defaults.
+--
+-- This package (and its documentation) won't consider non-Ed25519
+-- EdDSA systems any further. Support for protocols like Ed448 may be
+-- considered in the future.
 --
 module Crypto.Sign.Ed25519
        ( -- * A crash course introduction
@@ -574,17 +577,18 @@ foreign import ccall unsafe "ed25519_sign_open"
 -- along with several other parameters, chosen by the implementation
 -- in question. These parameters include @a@, @d@, and a field @GF(p)@
 -- where @p@ is prime. Ed25519 specifically uses @d = -121665/121666@,
--- @a = -1@, and the finite field @GF((2^155)-19)@, where @(2^155)-19@
+-- @a = -1@, and the finite field @GF((2^255)-19)@, where @(2^255)-19@
 -- is a prime number (which is also the namesake of the algorithm in
 -- question, as Ed__25519__). This yields the equation:
 --
 -- > -x^2 + y^2 = 1 - (121665/121666)*x^2*y^2
 --
 -- This curve is \'birationally equivalent\' to the well-known
--- Montgomery curve \'Curve25519\', which means that EdDSA shares the
--- same the difficult problem as Curve25519: that of the Elliptic
--- Curve Discrete Logarithm Problem (ECDLP). Ed25519 is currently
--- still the recommended EdDSA curve for most deployments.
+-- Montgomery curve \'Curve25519\', a popular diffie hellman function
+-- with strong security guarantees. Ed25519 is currently the
+-- recommended EdDSA curve for most deployments (although newer
+-- implementations such as Ed448 offer higher security at slower
+-- speeds).
 --
 -- As Ed25519 is an elliptic curve algorithm, the security level
 -- (i.e. number of computations taken to find a solution to the ECDLP
