@@ -861,18 +861,18 @@ foreign import ccall unsafe "ed25519_sign_open"
 -- with data from a possibly untrustworthy source until you can verify
 -- the signature.
 --
--- So, __some basic guidelines are__:
+-- So, some basic guidelines are:
 --
 --   - If you are simply not worried about efficiency very much, just
 --   use __PureEdDSA__ (i.e.  just use @'sign'@ and @'verify'@
---   directly).
+--   directly). It's simple and easy.
 --
---   - If you have __lots of small messages__, use __PureEdDSA__ (i.e.
---   just use @'sign'@ and @'verify'@ directly).
+--   - If you have lots of small messages, use __PureEdDSA__ (i.e.
+--   just use @'sign'@ and @'verify'@ directly). It's simple and easy.
 --
 --   - If you have to sign/verify __large messages__, possibly __in__
---   __an incremental fashion__, use __HashEdDSA__ with __a fast__
---   __hash__ (i.e.  just hash a message before using @'sign'@ or
+--   __an incremental fashion__, use __HashEdDSA__ with a fast
+--   hash (i.e.  just hash a message before using @'sign'@ or
 --   @'verify'@ on it).
 --
 --       - A hash like __BLAKE2b__ is recommended. Fast and very secure.
@@ -881,10 +881,12 @@ foreign import ccall unsafe "ed25519_sign_open"
 --       __are done hashing it and verifying the signature__.
 --
 -- As a result, you should be safe hashing your input before passing
--- it to @'sign'@ or @'dsign'@ in this library if you desire, and it may
--- save you CPU cycles for large inputs. It should be no different
+-- it to @'sign'@ or @'dsign'@ in this library if you desire, and it
+-- may save you CPU cycles for large inputs. It should be no different
 -- than the typical /hash-then-sign/ construction you see elsewhere,
 -- with the same downfalls. Should you do this, an extremely
 -- fast-yet-secure hash such as __BLAKE2b__ is recommended, which is
 -- even faster than MD5 or SHA-1 (and __do not ever use MD5 or__
--- __SHA-1__, on that note - they suffer from collision attacks).
+-- __SHA-1__, on that note - MD5 and both SHA1 are weak comparatively
+-- to modern ciphers, and have many published attacks that are getting
+-- better).
