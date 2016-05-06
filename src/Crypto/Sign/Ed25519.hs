@@ -56,6 +56,8 @@ module Crypto.Sign.Ed25519
        , createKeypairFromSeed_ -- :: ByteString -> Maybe (PublicKey, SecretKey)
        , createKeypairFromSeed  -- :: ByteString -> (PublicKey, SecretKey)
        , toPublicKey            -- :: SecretKey -> PublicKey
+       , secretToPublicKey      -- :: SecretKey -> PublicKey
+
          -- ** Importing and exporting keys
        , makePublicKey          -- :: ByteString -> Maybe PublicKey
        , openPublicKey          -- :: PublicKey  -> ByteString
@@ -262,7 +264,18 @@ createKeypairFromSeed seed
 -- @since 0.0.3.0
 toPublicKey :: SecretKey -- ^ Any valid @'SecretKey'@
             -> PublicKey -- ^ Corresponding @'PublicKey'@
-toPublicKey = PublicKey . S.drop prefixBytes  . unSecretKey
+toPublicKey = secretToPublicKey
+{-# DEPRECATED toPublicKey "@'toPublicKey'@ will be removed in a future release; use @'secretToPublicKey'@ instead." #-}
+
+-- | Derive the @'PublicKey'@ for a given @'SecretKey'@. This is a
+-- convenience which allows (for example) using @'createKeypair'@ and
+-- only ever storing the returned @'SecretKey'@ for any future
+-- operations.
+--
+-- @since 0.0.3.0
+secretToPublicKey :: SecretKey -- ^ Any valid @'SecretKey'@
+                  -> PublicKey -- ^ Corresponding @'PublicKey'@
+secretToPublicKey = PublicKey . S.drop prefixBytes  . unSecretKey
   where prefixBytes = cryptoSignSECRETKEYBYTES - cryptoSignPUBLICKEYBYTES
 
 --------------------------------------------------------------------------------
