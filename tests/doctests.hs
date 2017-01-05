@@ -3,27 +3,23 @@ module Main
        ) where
 import           Control.Applicative
 import           Control.Monad
-import           Data.List
+import           Data.List            ( isInfixOf )
 import           System.Directory
 import           System.FilePath
 
+import           System.FilePath.Find ( find, directory, extension, (==?), (&&?) )
 import           Test.DocTest
 
 main :: IO ()
 main = allSources >>= \sources -> doctest ("-isrc":sources)
 
 allSources :: IO [FilePath]
-allSources = liftM2 (++) (getFiles ".hs" "src")
-                         (getFiles ".o" "dist/build/src/cbits")
+allSources = liftM2 (++) (getHsFiles "src") (getCObjFiles ".")
 
-getFiles :: String -> FilePath -> IO [FilePath]
-getFiles ext root = filter (isSuffixOf ext) <$> go root
-  where
-    go dir = do
-      (dirs, files) <- getFilesAndDirectories dir
-      (files ++) . concat <$> mapM go dirs
+getHsFiles :: FilePath -> IO [FilePath]
+getHsFiles = find (return True) (extension ==? ".hs")
 
-getFilesAndDirectories :: FilePath -> IO ([FilePath], [FilePath])
-getFilesAndDirectories dir = do
-  c <- fmap (dir </>) . filter (`notElem` ["..", "."]) <$> getDirectoryContents dir
-  (,) <$> filterM doesDirectoryExist c <*> filterM doesFileExist c
+getCObjFiles :: FilePath -> IO [FilePath]
+getCObjFiles = find (return True) (isObj &&? isCorrectDir) where
+  isObj = extension ==? ".o"
+  isCorrectDir = isInfixOf "build/src/cbits" `liftM` directory
