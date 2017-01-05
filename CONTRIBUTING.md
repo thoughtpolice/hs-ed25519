@@ -17,7 +17,7 @@ You can use GitHub pull requests OR just email me patches directly
 (see `git format-patch --help`,) whatever you are more comfortable with.
 
 One nice aspect of submitting a pull request is that
-[travis-ci.org](http://travis-ci.org) bots will automatically merge, build
+[travis-ci.org](https://travis-ci.org) bots will automatically merge, build
 and run tests against your commits, and continue as you update the request,
 so you can be sure you didn't typo stuff or something before a final merge.
 

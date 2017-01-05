@@ -3,8 +3,8 @@ version:             0.0.5.0
 category:            Cryptography
 license:             MIT
 synopsis:            Ed25519 cryptographic signatures
-homepage:            http://thoughtpolice.github.com/hs-ed25519
-bug-reports:         http://github.com/thoughtpolice/hs-ed25519/issues
+homepage:            https://thoughtpolice.github.com/hs-ed25519
+bug-reports:         https://github.com/thoughtpolice/hs-ed25519/issues
 license-file:        LICENSE.txt
 copyright:           Copyright (c) Austin Seipp 2013-2017
 author:              Austin Seipp

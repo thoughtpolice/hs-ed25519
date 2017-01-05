@@ -29,14 +29,14 @@
 --
 -- For more reading on the underlying implementation and theory
 -- (including how to get a copy of the original Ed25519 software),
--- visit <http://ed25519.cr.yp.to>. There are two papers that discuss
+-- visit <https://ed25519.cr.yp.to>. There are two papers that discuss
 -- the design of EdDSA/Ed25519 in detail:
 --
---   * <http://ed25519.cr.yp.to/ed25519-20110926.pdf "High-speed high-security signatures"> -
+--   * <https://ed25519.cr.yp.to/ed25519-20110926.pdf "High-speed high-security signatures"> -
 --   The original specification by Bernstein, Duif, Lange, Schwabe,
 --   and Yang.
 --
---   * <http://ed25519.cr.yp.to/eddsa-20150704.pdf "EdDSA for more curves"> -
+--   * <https://ed25519.cr.yp.to/eddsa-20150704.pdf "EdDSA for more curves"> -
 --   An extension of the original EdDSA specification allowing it to
 --   be used with more curves (such as Ed41417, or Ed488), as well as
 --   defining the support for __message prehashing__. The original
@@ -646,12 +646,12 @@ foreign import ccall unsafe "ed25519_sign_open"
 -- it is rather slow, even by non-handwritten-assembly standards of
 -- speed. That said, it should still be competitive with most other
 -- signature schemes: the underlying implementation is @ref10@ from
--- <http://bench.cr.yp.to/ SUPERCOP>, authored by Daniel J. Bernstein,
+-- <https://bench.cr.yp.to/ SUPERCOP>, authored by Daniel J. Bernstein,
 -- which is within the
--- <http://bench.cr.yp.to/impl-sign/ed25519.html realm of competition>
+-- <https://bench.cr.yp.to/impl-sign/ed25519.html realm of competition>
 -- against some assembly implementations (only 2x slower), and much
 -- faster than the slow reference implementation (25x slower). When up
--- <http://bench.cr.yp.to/web-impl/amd64-skylake-crypto_sign.html against RSA>
+-- <https://bench.cr.yp.to/web-impl/amd64-skylake-crypto_sign.html against RSA>
 -- signatures (ronald3072) on a modern Intel machine, it is still __15x__
 -- faster at signing messages /at the same 128-bit security level/.
 --
@@ -793,7 +793,7 @@ foreign import ccall unsafe "ed25519_sign_open"
 --
 -- Generally speaking, it's OK to prehash messages before giving them
 -- to Ed25519. However, there is a caveat. In the paper
--- <http://ed25519.cr.yp.to/eddsa-20150704.pdf "EdDSA for more curves">,
+-- <https://ed25519.cr.yp.to/eddsa-20150704.pdf "EdDSA for more curves">,
 -- the authors of the original EdDSA enhance the specification by
 -- extending it with a message prehash function, @H'@, along with an
 -- internal hash @H@. Here, the prehash @H'@ is simply applied to the
