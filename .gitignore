@@ -1,4 +1,5 @@
 /.cabal-sandbox/
+/.stack*
 /dist*
 /bench/*.html
 cabal.sandbox.config
