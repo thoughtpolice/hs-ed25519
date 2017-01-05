@@ -13,9 +13,9 @@ even copy into any projects that need it directly.
 For full details (including notes on the underlying implementation),
 check out [the docs][].
 
-[ed25519]: http://ed25519.cr.yp.to/
-[SUPERCOP]: http://bench.cr.yp.to/supercop.html
-[the docs]: http://hackage.haskell.org/package/ed25519/docs/Crypto-Sign-Ed25519.html
+[ed25519]: https://ed25519.cr.yp.to/
+[SUPERCOP]: https://bench.cr.yp.to/supercop.html
+[the docs]: https://hackage.haskell.org/package/ed25519/docs/Crypto-Sign-Ed25519.html
 
 # Installation
 
@@ -49,7 +49,7 @@ MIT. See
 for terms of copyright and redistribution.
 
 [contribute]: https://github.com/thoughtpolice/hs-ed25519/blob/master/CONTRIBUTING.md
-[issue tracker]: http://github.com/thoughtpolice/hs-ed25519/issues
-[gh]: http://github.com/thoughtpolice/hs-ed25519
-[bb]: http://bitbucket.org/thoughtpolice/hs-ed25519
-[Hackage]: http://hackage.haskell.org/package/ed25519
+[issue tracker]: https://github.com/thoughtpolice/hs-ed25519/issues
+[gh]: https://github.com/thoughtpolice/hs-ed25519
+[bb]: https://bitbucket.org/thoughtpolice/hs-ed25519
+[Hackage]: https://hackage.haskell.org/package/ed25519
