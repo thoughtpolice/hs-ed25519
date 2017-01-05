@@ -19,4 +19,4 @@ environment:
 test_script:
 - stack setup > nul
 - echo "" | stack --no-terminal build
-- stack test
+- stack test --flag ed25519:-test-doctests
