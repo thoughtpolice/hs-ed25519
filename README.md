@@ -5,7 +5,7 @@
 [![Windows Build Status](https://img.shields.io/appveyor/ci/thoughtpolice/hs-ed25519/master.svg?label=Windows%20build)](https://ci.appveyor.com/project/thoughtpolice/hs-ed25519/branch/master)
 [![Hackage version](https://img.shields.io/hackage/v/ed25519.svg?label=Hackage)](https://hackage.haskell.org/package/ed25519)
 [![Stackage version](https://www.stackage.org/package/ed25519/badge/lts?label=Stackage)](https://www.stackage.org/package/ed25519)
-[![MIT](http://b.repl.ca/v1/license-MIT-blue.png)](https://en.wikipedia.org/wiki/MIT_License)
+[![MIT](https://img.shields.io/badge/License-MIT-blue.png)](https://en.wikipedia.org/wiki/MIT_License)
 [![Haskell](https://img.shields.io/badge/Language-Haskell-yellowgreen.svg)](https://www.haskell.org)
 
 This package implements minimal bindings to the [ed25519][] signature
