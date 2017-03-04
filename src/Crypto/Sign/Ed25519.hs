@@ -93,6 +93,9 @@ module Crypto.Sign.Ed25519
          -- *** Generation of psuedo-random seeds
          -- $seedgen
 
+         -- *** Key serialization and public key validity
+         -- $keyverif
+
          -- ** Performance and implementation
          -- $performance
 
@@ -638,6 +641,62 @@ foreign import ccall unsafe "ed25519_sign_open"
 -- could lead to denial of service in some scenarios.
 
 
+-- $keyverif
+--
+-- When using Ed25519, you may come across cases where you want to serialize a
+-- @'PublicKey'@ (in a database, on disk, over the network) or otherwise put a
+-- public key in a \"stable\" format, so you can read it later, and ensure it is
+-- valid before computing signatures. Similarly, you may want to do the same for
+-- signatures.
+--
+-- In order to do this, all you need to do is take the @'S.ByteString'@ out of
+-- the data type, and write it to disk. That's all. There are no instances for
+-- @binary@ or other packages; the @'S.ByteString'@ is the format, all on its
+-- own.
+--
+-- This may seem mildly confusing at first; in most cases, you think of a public
+-- key as something like \"the @id_rsa.pub@ file in my home directory\", but
+-- that is not what a public key is. Rather, that is an __encoding__ of a public
+-- key, in ASCII format. This ASCII format lends itself to a few features; for
+-- example, it can encode multiple public key formats, or different key sizes.
+-- Essentially, you can attach metadata into the ASCII representation.
+--
+-- Ed25519 has been designed carefully so that all 32-byte values are legitimate
+-- keys. There are no illegitimate values for keys in this input space; all are
+-- equally valid, and there is no bias or seed that is more legitimate than
+-- another (other than entropy concerns).
+--
+-- Furthermore, Ed25519 has only one failure mode: either a signature is valid
+-- under a particular public key, or it is not. Because signatures and keys can
+-- be any arbitrary string of bytes, the only way to determine if a signature is
+-- legitimate is to simply try to validate it against some key. Why do this? The
+-- answer is: security. In practice, things like ASCII encoding formats require
+-- a substantial amount of extra code on top of what is conceptually a simple
+-- algorithm. Also, having multiple failure modes (\"public key is bad\",
+-- \"signature was corrupted\" vs simply \"signature validation failed\")
+-- requires even more code and tests to cover every case. This, in practice, can
+-- cause security issues on its own (for example, if two code paths treat two
+-- different failure mode the same due to copy and paste, or simple error, this
+-- may lead to a security vulnerability).
+--
+-- With this in mind:
+--
+-- If you want to serialize Ed25519 public keys, private keys, or signatures in
+-- this package, simply write out the @'S.ByteString'@ and do nothing else.
+-- (These blobs are perfectly compatible with other Ed25519 libraries; it is an
+-- __algorithm__, not a format, so they will compute the same results, and take
+-- the same inputs.)
+--
+-- If you want to e.g. validate that a public key is legitimate -- simply demand
+-- that the owner of the key sign something and give it to you. If the signature
+-- is valid, then so is the key.
+--
+-- To repeat, __you should rarely have to worry about serialization issues__,
+-- and this is a feature, not a bug (quite literally). Simply write out the
+-- @'S.ByteString'@ blobs. If you would like self-describing \"ASCII Armored\"
+-- formats like GnuPG -- you are free to implement this yourself, but you should
+-- be careful about adding more code and surface area than you need, when
+-- signature validation is already important enough.
 
 -- $performance
 --
