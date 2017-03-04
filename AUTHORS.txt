@@ -1,3 +1,17 @@
 Author, target of blame:
 
   Austin Seipp <aseipp [@at] pobox [.dot] com>
+
+People who contributed code, ideas or lively discussion include, in no
+particular order:
+
+  Adam Bergmark          <adam [@at] bergmark [.dot] nl>
+  Clint Adams            <clint [@at] debian [.dot] org>
+  Domen Kožar            <domen [@at] dev [.dot] si>
+  Herbert Valerio Riedel <hvr [@at] gnu [.dot] org>
+  James Parker           <dev [@at] jamesparker [.dot] me>
+  Oleg Grenrus           <oleg [.dot] grenrus [@at] iki [.dot] fi>
+  Tristan Seligmann      <mithrandi [@at] mithrandi [.dot] net>
+
+This package includes code from the 'ref10' SUPERCOP implementation of ed25519.
+It was written by Dan J. Bernstein (& co), and is released in the Public Domain.
