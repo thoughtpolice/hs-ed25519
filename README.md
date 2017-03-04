@@ -1,8 +1,12 @@
 # Minimal package for ed25519 signatures
 
-[![Build Status](https://travis-ci.org/thoughtpolice/hs-ed25519.png?branch=master)](https://travis-ci.org/thoughtpolice/hs-ed25519)
-[![MIT](http://b.repl.ca/v1/license-MIT-blue.png)](http://en.wikipedia.org/wiki/MIT_License)
-[![Haskell](http://b.repl.ca/v1/language-haskell-lightgrey.png)](http://www.haskell.org)
+
+[![Linux Build Status](https://img.shields.io/travis/thoughtpolice/hs-ed25519/master.svg?label=Linux%20build)](https://travis-ci.org/thoughtpolice/hs-ed25519)
+[![Windows Build Status](https://img.shields.io/appveyor/ci/thoughtpolice/hs-ed25519/master.svg?label=Windows%20build)](https://ci.appveyor.com/project/thoughtpolice/hs-ed25519/branch/master)
+[![Hackage version](https://img.shields.io/hackage/v/ed25519.svg?label=Hackage)](https://hackage.haskell.org/package/ed25519)
+[![Stackage version](https://www.stackage.org/package/ed25519/badge/lts?label=Stackage)](https://www.stackage.org/package/ed25519)
+[![MIT](http://b.repl.ca/v1/license-MIT-blue.png)](https://en.wikipedia.org/wiki/MIT_License)
+[![Haskell](https://img.shields.io/badge/Language-Haskell-yellowgreen.svg)](https://www.haskell.org)
 
 This package implements minimal bindings to the [ed25519][] signature
 scheme. It's designed to be small, with no dependencies, and fast. It
