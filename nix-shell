@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+
+# Having a simple script like this is a bit easier than a multi-package shell.nix
+# for doing rapid development.
+
+exec nix-shell -p 'pkgs.haskell.packages.ghc844.ghcWithPackages (p: with p; [
+  cabal-install
+])' "$@"
