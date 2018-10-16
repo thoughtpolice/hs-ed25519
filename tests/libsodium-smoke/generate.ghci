@@ -1,0 +1,10 @@
+
+import qualified Data.ByteString as B
+import qualified Crypto.Sign.Ed25519
+
+(PublicKey pk, SecretKey sk) <- createKeypair
+B.writeFile "tests/libsodium-smoke/foo.pk" pk
+B.writeFile "tests/libsodium-smoke/foo.sk" sk
+blob <- B.readFile "tests/libsodium-smoke/blob"
+sig = dsign (SecretKey sk) blob
+B.writeFile "tests/libsodium-smoke/blob.sig" (unSignature sig)
