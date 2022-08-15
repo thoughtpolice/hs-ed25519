@@ -84,9 +84,16 @@ tests ntests =
     wrap prop = do
       r <- quickCheckWithResult stdArgs{maxSuccess=ntests} prop
       case r of
+#if MIN_VERSION_QuickCheck(2,12,0)
+        Success n _ _ _ _ _     -> return (True, n)
+        GaveUp  n _ _ _ _ _     -> return (True, n)
+#else
         Success n _ _           -> return (True, n)
         GaveUp  n _ _           -> return (True, n)
-#if MIN_VERSION_QuickCheck(2,7,0)
+#endif
+#if MIN_VERSION_QuickCheck(2,12,0)
+        Failure n _ _ _ _ _ _ _ _ _ _ _ _ -> return (False, n)
+#elif MIN_VERSION_QuickCheck(2,7,0)
         Failure n _ _ _ _ _ _ _ _ _ -> return (False, n)
 #elif MIN_VERSION_QuickCheck(2,6,0)
         Failure n _ _ _ _ _ _ _ -> return (False, n)
