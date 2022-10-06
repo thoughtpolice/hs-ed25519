@@ -22,4 +22,4 @@ getHsFiles = find (return True) (extension ==? ".hs")
 getCObjFiles :: FilePath -> IO [FilePath]
 getCObjFiles = find (return True) (isObj &&? isCorrectDir) where
   isObj = extension ==? ".o"
-  isCorrectDir = isInfixOf "build/src/cbits" `liftM` directory
+  isCorrectDir = isInfixOf "build/src/cbits" <$> directory

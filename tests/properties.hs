@@ -18,19 +18,19 @@ import           Text.Printf
 -- Orphans
 
 instance Arbitrary ByteString where
-  arbitrary = S.pack `liftM` arbitrary
+  arbitrary = S.pack <$> arbitrary
 
 instance Arbitrary SecretKey where
-  arbitrary = SecretKey `liftM` arbitrary
+  arbitrary = SecretKey <$> arbitrary
 
 instance Arbitrary PublicKey where
-  arbitrary = PublicKey `liftM` arbitrary
+  arbitrary = PublicKey <$> arbitrary
 
 --------------------------------------------------------------------------------
 -- Signatures
 
 keypairProp :: ((PublicKey, SecretKey) -> Bool) -> Property
-keypairProp k = morallyDubiousIOProperty $ k `liftM` createKeypair
+keypairProp k = morallyDubiousIOProperty $ k <$> createKeypair
 
 roundtrip :: ByteString -> Property
 roundtrip xs
@@ -55,7 +55,7 @@ signLength (xs,xs2)
 signLength2 :: ByteString -> Property
 signLength2 xs
   = keypairProp $ \(_,sk) ->
-      (64 == S.length (unSignature $ dsign sk xs))
+      64 == S.length (unSignature $ dsign sk xs)
 
 --------------------------------------------------------------------------------
 -- Driver
@@ -84,13 +84,7 @@ tests ntests =
     wrap prop = do
       r <- quickCheckWithResult stdArgs{maxSuccess=ntests} prop
       case r of
-        Success n _ _           -> return (True, n)
-        GaveUp  n _ _           -> return (True, n)
-#if MIN_VERSION_QuickCheck(2,7,0)
-        Failure n _ _ _ _ _ _ _ _ _ -> return (False, n)
-#elif MIN_VERSION_QuickCheck(2,6,0)
-        Failure n _ _ _ _ _ _ _ -> return (False, n)
-#else
-        Failure n _ _ _ _ _ _   -> return (False, n)
-#endif
-        _                       -> return (False, 0)
+        Success {numTests=n} -> return (True, n)
+        GaveUp  {numTests=n} -> return (True, n)
+        Failure {numTests=n} -> return (False, n)
+        _                    -> return (False, 0)

@@ -461,7 +461,7 @@ sign' :: SecretKey
       -- ^ Input message
       -> Signature
       -- ^ Message @'Signature'@, without the message
-sign' sk xs = dsign sk xs
+sign' = dsign
 {-# DEPRECATED sign' "@'sign''@ will be removed in a future release; use @'dsign'@ instead." #-}
 
 -- | Verify a message with a detached @'Signature'@ against a given
@@ -476,7 +476,7 @@ verify' :: PublicKey
         -- ^ Message @'Signature'@
         -> Bool
         -- ^ Verification result
-verify' pk xs sig = dverify pk xs sig
+verify' = dverify
 {-# DEPRECATED verify' "@'verify''@ will be removed in a future release; use @'dverify'@ instead." #-}
 
 --------------------------------------------------------------------------------
