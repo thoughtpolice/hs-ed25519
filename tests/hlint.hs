@@ -15,7 +15,7 @@ main = do
 
   -- When we build, we might use cabal, stack, cabal new-build, etc..
   -- so find the cabal_macros.h file dynamically.
-  macros <- find (return True) ((== "cabal_macros.h") `liftM` fileName) "."
+  macros <- find (return True) ((== "cabal_macros.h") <$> fileName) "."
   case macros of
     [] -> do
       putStrLn "Couldn't find cabal_macros.h!"
