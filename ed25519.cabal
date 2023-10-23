@@ -1,3 +1,4 @@
+cabal-version:       >=1.10
 name:                ed25519
 version:             0.0.5.0
 category:            Cryptography
@@ -10,13 +11,6 @@ copyright:           Copyright (c) Austin Seipp 2013-2017
 author:              Austin Seipp
 maintainer:          Austin Seipp <aseipp@pobox.com>
 build-type:          Simple
-cabal-version:       >=1.10
-tested-with:         GHC == 7.0.1, GHC == 7.0.2, GHC == 7.0.3, GHC == 7.0.4,
-                     GHC == 7.2.1, GHC == 7.2.2, GHC == 7.4.1, GHC == 7.4.2,
-                     GHC == 7.6.1, GHC == 7.6.2, GHC == 7.6.3,
-                     GHC == 7.8.2, GHC == 7.8.3, GHC == 7.8.4,
-                     GHC == 7.10.1, GHC == 7.10.2, GHC == 8.0.1,
-                     GHC == 8.0.2, GHC == 8.2.1, GHC == 8.2.2
 
 description:
   This package provides a simple, fast, self-contained copy of the
@@ -24,8 +18,20 @@ description:
   includes support for detached signatures, and thorough documentation
   on the design and implementation, including usage guidelines.
 
+tested-with:
+  GHC == 9.8.1
+  GHC == 9.6.3
+  GHC == 9.4.7
+  GHC == 9.2.8
+  GHC == 9.0.2
+  GHC == 8.10.7
+  GHC == 8.8.4
+  GHC == 8.6.5
+  GHC == 8.4.4
+  GHC == 8.2.2
+  GHC == 8.0.2
+
 extra-source-files:
-  .travis.yml
   AUTHORS.txt
   README.md
   CONTRIBUTING.md
@@ -61,9 +67,9 @@ flag no-donna
 
 library
   build-depends:
-    ghc-prim    >= 0.1 && < 0.11,
+    ghc-prim    >= 0.1 && < 0.12,
     base        >= 4   && < 5,
-    bytestring  >= 0.9 && < 0.12
+    bytestring  >= 0.9 && < 0.13
 
   exposed-modules:
     Crypto.Sign.Ed25519
@@ -100,7 +106,7 @@ test-suite properties
   else
     build-depends:
       base        >= 4   && < 5,
-      bytestring  >= 0.9 && < 0.12,
+      bytestring  >= 0.9 && < 0.13,
       QuickCheck  >= 2.4 && < 2.15,
       ed25519
 
@@ -119,7 +125,7 @@ test-suite hlint
   else
     build-depends:
       base      >= 4   && < 5,
-      hlint     >= 1.7 && < 3.6,
+      hlint     >= 1.7 && < 3.7,
       filemanip >= 0.3 && < 0.4
 
 
@@ -136,7 +142,7 @@ test-suite doctests
       base      >= 4    && < 5,
       filepath  >= 1.0  && < 1.5,
       directory >= 1.0  && < 1.4,
-      doctest   >= 0.10 && < 0.21,
+      doctest   >= 0.10 && < 0.23,
       filemanip >= 0.3  && < 0.4,
       ed25519
 
@@ -147,9 +153,9 @@ benchmark bench
   type:               exitcode-stdio-1.0
   build-depends:
       base        >= 4   && < 5,
-      bytestring  >= 0.9 && < 0.12,
-      criterion   >= 0.8 && < 1.2,
-      deepseq     >= 1.3 && < 1.5,
+      bytestring  >= 0.9 && < 0.13,
+      criterion   >= 0.8 && < 1.8,
+      deepseq     >= 1.3 && < 1.6,
       ed25519
 
   default-language:   Haskell2010
