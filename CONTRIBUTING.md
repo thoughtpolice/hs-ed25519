@@ -17,7 +17,7 @@ You can use GitHub pull requests OR just email me patches directly
 (see `git format-patch --help`,) whatever you are more comfortable with.
 
 One nice aspect of submitting a pull request is that
-[travis-ci.org](https://travis-ci.org) bots will automatically merge, build
+continuous integration will automatically merge, build
 and run tests against your commits, and continue as you update the request,
 so you can be sure you didn't typo stuff or something before a final merge.
 
@@ -40,4 +40,8 @@ Other fields may be added in the same vein for attribution or other purposes
 
 ## Hacker notes
 
-N/A.
+The CI `.github/workflows/haskell-ci.yml` is auto-generated from `cabal.haskell-ci`
+and the `tested-with` field in `ed25519.cabal`.
+After updating these files, run `haskell-ci regenerate`.
+While the `hlint` test does not work on CI, the workflow needs also be patched with
+`haskell-ci-disable-test-hlint.patch` after regeneration.

@@ -1,0 +1,11 @@
+--- .github/workflows/haskell-ci.yml.unpatched	2023-10-24 10:18:35.000000000 +0200
++++ .github/workflows/haskell-ci.yml	2023-10-24 11:12:21.000000000 +0200
+@@ -119,7 +119,7 @@
+           echo "CABAL=$HOME/.ghcup/bin/cabal-3.10.1.0 -vnormal+nowrap" >> "$GITHUB_ENV"
+           HCNUMVER=$(${HC} --numeric-version|perl -ne '/^(\d+)\.(\d+)\.(\d+)(\.(\d+))?$/; print(10000 * $1 + 100 * $2 + ($3 == 0 ? $5 != 1 : $3))')
+           echo "HCNUMVER=$HCNUMVER" >> "$GITHUB_ENV"
+-          echo "ARG_TESTS=--enable-tests" >> "$GITHUB_ENV"
++          echo "ARG_TESTS=--enable-tests --flags=-test-hlint" >> "$GITHUB_ENV"
+           echo "ARG_BENCH=--enable-benchmarks" >> "$GITHUB_ENV"
+           echo "HEADHACKAGE=false" >> "$GITHUB_ENV"
+           echo "ARG_COMPILER=--$HCKIND --with-compiler=$HC" >> "$GITHUB_ENV"
