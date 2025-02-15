@@ -19,9 +19,11 @@ description:
   on the design and implementation, including usage guidelines.
 
 tested-with:
-  GHC == 9.8.1
-  GHC == 9.6.3
-  GHC == 9.4.7
+  GHC == 9.12.1
+  GHC == 9.10.1
+  GHC == 9.8.4
+  GHC == 9.6.6
+  GHC == 9.4.8
   GHC == 9.2.8
   GHC == 9.0.2
   GHC == 8.10.7
@@ -67,7 +69,7 @@ flag no-donna
 
 library
   build-depends:
-    ghc-prim    >= 0.1 && < 0.12,
+    ghc-prim    >= 0.1 && < 1,
     base        >= 4   && < 5,
     bytestring  >= 0.9 && < 0.13
 
@@ -107,7 +109,7 @@ test-suite properties
     build-depends:
       base        >= 4   && < 5,
       bytestring  >= 0.9 && < 0.13,
-      QuickCheck  >= 2.4 && < 2.15,
+      QuickCheck  >= 2.4 && < 2.16,
       ed25519
 
 --
@@ -125,7 +127,7 @@ test-suite hlint
   else
     build-depends:
       base      >= 4   && < 5,
-      hlint     >= 1.7 && < 3.7,
+      hlint     >= 1.7 && < 4,
       filemanip >= 0.3 && < 0.4
 
 
@@ -140,9 +142,9 @@ test-suite doctests
   else
     build-depends:
       base      >= 4    && < 5,
-      filepath  >= 1.0  && < 1.5,
+      filepath  >= 1.0  && < 1.6,
       directory >= 1.0  && < 1.4,
-      doctest   >= 0.10 && < 0.23,
+      doctest   >= 0.10 && < 0.24,
       filemanip >= 0.3  && < 0.4,
       ed25519
 
