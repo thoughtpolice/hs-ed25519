@@ -503,7 +503,7 @@ foreign import ccall unsafe "ed25519_sign_keypair"
 
 foreign import ccall unsafe "ed25519_sign"
   c_crypto_sign :: Ptr Word8 -> Ptr CULLong ->
-                   Ptr CChar -> CULLong -> Ptr CChar -> IO CULLong
+                   Ptr CChar -> CULLong -> Ptr CChar -> IO CInt
 
 foreign import ccall unsafe "ed25519_sign_open"
   c_crypto_sign_open :: Ptr Word8 -> Ptr CULLong ->
