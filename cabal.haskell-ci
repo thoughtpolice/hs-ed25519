@@ -1,4 +1,3 @@
 branches: master
 
--- doctest does not yet build on GHC 9.12
-tests: < 9.12
+-- note: need to add --flags=-test-hlint to ARG_TESTS because hlint tests are broken
