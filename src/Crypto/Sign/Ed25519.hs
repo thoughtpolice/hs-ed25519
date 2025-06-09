@@ -311,9 +311,9 @@ openPublicKey (PublicKey xs) = xs
 --
 -- @since 0.0.6.0
 makeSecretKey :: ByteString -> Maybe SecretKey
-makeSecretKey xs
-  | S.length xs /= 32 = Nothing
-  | otherwise         = Just (SecretKey xs)
+-- The ed25519_sign_seed_keypair function uses the seed directly as the secret
+-- key, so the input here can just be passed to its Haskell wrapper.
+makeSecretKey xs = snd <$> createKeypairFromSeed_ xs
 
 -- | Return a 32-byte long @'ByteString'@ representing a
 -- @'SecretKey'@. This @'ByteString'@ is suitable for transmission and
@@ -321,7 +321,9 @@ makeSecretKey xs
 --
 -- @since 0.0.6.0
 openSecretKey :: SecretKey -> ByteString
-openSecretKey (SecretKey xs) = xs
+-- Internal representation of secret key uses 64 bytes, with the first 32 bytes
+-- being the actual secret key, followed by 32 bytes of public key.
+openSecretKey (SecretKey xs) = S.take 32 xs
 
 --------------------------------------------------------------------------------
 -- Default, non-detached API
